@@ -1,83 +1,163 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { FaArrowLeft, FaEye, FaEyeSlash, FaLock, FaUser } from "react-icons/fa";
 import api from "../../api/axios";
 import "./Auth.css";
 
+const portalCopy = {
+  candidate: {
+    eyebrow: "CANDIDATE PORTAL",
+    title: "Continue your career journey",
+    text: "Search jobs, manage your profile and track every application.",
+  },
+  company: {
+    eyebrow: "COMPANY PORTAL",
+    title: "Build your strongest team",
+    text: "Manage jobs, candidates, interviews and recruitment workflows.",
+  },
+  admin: {
+    eyebrow: "PLATFORM ADMIN",
+    title: "Manage HirePath securely",
+    text: "Review companies, monitor users and oversee platform operations.",
+  },
+};
+
+function getDashboard(roles = []) {
+  if (roles.includes("SuperAdmin") || roles.includes("Admin")) return "/admin-dashboard";
+  if (roles.includes("CompanyAdmin") || roles.includes("Recruiter")) return "/recruiter-dashboard";
+  if (roles.includes("HiringManager")) return "/hiring-dashboard";
+  return "/candidate-dashboard";
+}
+
 function Login() {
-    const [form, setForm] = useState({
-        emailOrUsername: "",
-        password: "",
-    });
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const portal = searchParams.get("portal") || "candidate";
+  const content = useMemo(() => portalCopy[portal] || portalCopy.candidate, [portal]);
 
-    const [message, setMessage] = useState("");
-    const [type, setType] = useState("");
-    const [loading, setLoading] = useState(false);
+  const [form, setForm] = useState({ emailOrUsername: "", password: "" });
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-    const change = (e) => {
-        setForm({ ...form, [e.target.name]: e.target.value });
-    };
+  const change = (event) => {
+    setForm((current) => ({ ...current, [event.target.name]: event.target.value }));
+  };
 
-    const submit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage("");
+  const submit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    setMessage("");
 
-        try {
-            const res = await api.post("/Auth/login", form);
-            const data = res.data;
+    try {
+      const response = await api.post("/Auth/login", form);
+      const data = response.data;
 
-            localStorage.setItem("token", data.token);
-            localStorage.setItem("user", JSON.stringify(data));
+      if (!data?.isSuccess || !data?.token) {
+        throw new Error(data?.message || "Login failed.");
+      }
 
-            setType("success");
-            setMessage("Login successful.");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data));
+      localStorage.setItem("roles", JSON.stringify(data.roles || []));
 
-            const role = data.roles?.[0];
+      setType("success");
+      setMessage(data.message || "Login successful.");
+      navigate(getDashboard(data.roles), { replace: true });
+    } catch (error) {
+      setType("error");
+      setMessage(
+        error.response?.data?.message ||
+        error.response?.data?.title ||
+        error.message ||
+        "Unable to sign in. Please check your details."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            setTimeout(() => {
-                if (role === "Admin") window.location.href = "/admin-dashboard";
-                else if (role === "Recruiter") window.location.href = "/recruiter-dashboard";
-                else if (role === "HiringManager") window.location.href = "/hiring-dashboard";
-                else window.location.href = "/candidate-dashboard";
-            }, 800);
-        } catch (err) {
-            setType("error");
-            setMessage(err.response?.data?.message || "Login failed.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="auth-page">
-            <div className="auth-card">
-                <div className="auth-badge">AI Recruitment Platform</div>
-                <h1>HirePath AI</h1>
-                <p>Login to your account</p>
-
-                {message && <div className={`message ${type}`}>{message}</div>}
-
-                <form onSubmit={submit}>
-                    <div className="form-group">
-                        <label>Email or Username</label>
-                        <input name="emailOrUsername" value={form.emailOrUsername} onChange={change} required />
-                    </div>
-
-                    <div className="form-group">
-                        <label>Password</label>
-                        <input type="password" name="password" value={form.password} onChange={change} required />
-                    </div>
-
-                    <button className="auth-btn" disabled={loading}>
-                        {loading ? "Logging in..." : "Login"}
-                    </button>
-                </form>
-
-                <div className="auth-links">
-                    <a href="/forgot-password">Forgot Password?</a> | <a href="/register">Register</a>
-                </div>
-            </div>
+  return (
+    <div className="login-shell">
+      <section className="login-showcase">
+        <Link to="/" className="login-back"><FaArrowLeft /> Back to portals</Link>
+        <div className="login-brand">
+          <div className="brand-mark large">H</div>
+          <div>
+            <span>AI RECRUITMENT PLATFORM</span>
+            <strong>HirePath</strong>
+          </div>
         </div>
-    );
+        <div className="login-showcase-copy">
+          <span>{content.eyebrow}</span>
+          <h1>{content.title}</h1>
+          <p>{content.text}</p>
+        </div>
+        <div className="login-security"><FaLock /> Secure, role-based portal access</div>
+      </section>
+
+      <section className="login-panel">
+        <div className="login-form-wrap">
+          <span className="form-eyebrow">WELCOME BACK</span>
+          <h2>Sign in to HirePath</h2>
+          <p className="form-intro">Enter your account details to continue.</p>
+
+          {message && <div className={`message ${type}`}>{message}</div>}
+
+          <form onSubmit={submit} className="modern-login-form">
+            <label htmlFor="emailOrUsername">Email or username</label>
+            <div className="input-with-icon">
+              <FaUser />
+              <input
+                id="emailOrUsername"
+                name="emailOrUsername"
+                value={form.emailOrUsername}
+                onChange={change}
+                placeholder="Enter email or username"
+                autoComplete="username"
+                required
+              />
+            </div>
+
+            <div className="password-heading">
+              <label htmlFor="password">Password</label>
+              <Link to="/forgot-password">Forgot password?</Link>
+            </div>
+            <div className="input-with-icon">
+              <FaLock />
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={form.password}
+                onChange={change}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+
+            <button className="login-submit" disabled={loading}>
+              {loading ? "Signing in..." : "Sign in"}
+            </button>
+          </form>
+
+          <p className="signup-note">
+            New candidate? <Link to="/register">Create an account</Link>
+          </p>
+        </div>
+      </section>
+    </div>
+  );
 }
 
 export default Login;

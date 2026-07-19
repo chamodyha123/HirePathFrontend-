@@ -1,62 +1,54 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import VerifyEmail from "./pages/auth/VerifyEmail";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
-
-// Candidate components නිවැරදි paths සහිතව import කිරීම
 import CandidateDashboard from "./pages/candidate/CandidateDashboard";
 import Profile from "./pages/candidate/Profile";
 import ResumeManager from "./pages/candidate/ResumeManager";
 import SkillsSection from "./pages/candidate/SkillsSection";
-// Recruiter Portal Components Import
 import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import JobManagement from "./pages/recruiter/JobManagement";
 import CandidateTracker from "./pages/recruiter/CandidateTracker";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function Placeholder({ title }) {
-    return (
-        <div style={{ padding: "40px", fontFamily: "Arial" }}>
-            <h1>{title}</h1>
-            <p>This dashboard will be developed later.</p>
-        </div>
-    );
+  return (
+    <div style={{ minHeight: "100vh", padding: "48px", fontFamily: "Inter, Arial", background: "#f5f7fb" }}>
+      <h1>{title}</h1>
+      <p>This dashboard will be connected to the member frontend when it is ready.</p>
+    </div>
+  );
 }
 
 function App() {
-    return (
-        <BrowserRouter>
-            <Routes>
-                {/* Auth & Home Routes */}
-                {/* Public & Auth Routes */}
-                <Route path="/" element={<Home />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/verify-email" element={<VerifyEmail />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/company-registration" element={<Placeholder title="Company Registration" />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
 
-                {/* Candidate Dashboard Routes */}
-                {/* දැන් ලොග් වූ පසු කෙලින්ම යන්නේ CandidateDashboard එකටයි */}
-                <Route path="/candidate-dashboard" element={<CandidateDashboard />} />
-                <Route path="/candidate/profile" element={<Profile userId={1} />} />
-                <Route path="/candidate/resumes" element={<ResumeManager />} />
-                <Route path="/candidate/skills" element={<SkillsSection />} />
+        <Route path="/candidate-dashboard" element={<ProtectedRoute roles={["Candidate"]}><CandidateDashboard /></ProtectedRoute>} />
+        <Route path="/candidate/profile" element={<ProtectedRoute roles={["Candidate"]}><Profile userId={1} /></ProtectedRoute>} />
+        <Route path="/candidate/resumes" element={<ProtectedRoute roles={["Candidate"]}><ResumeManager /></ProtectedRoute>} />
+        <Route path="/candidate/skills" element={<ProtectedRoute roles={["Candidate"]}><SkillsSection /></ProtectedRoute>} />
 
-                {/* Other Dashboards */}
-                <Route path="/recruiter-dashboard" element={<Placeholder title="Recruiter Dashboard" />} />
-                <Route path="/hiring-dashboard" element={<Placeholder title="Hiring Manager Dashboard" />} />
-                <Route path="/admin-dashboard" element={<Placeholder title="Admin Dashboard" />} />
+        <Route path="/recruiter-dashboard" element={<ProtectedRoute roles={["Recruiter", "CompanyAdmin"]}><RecruiterDashboard /></ProtectedRoute>} />
+        <Route path="/recruiter-dashboard/jobs" element={<ProtectedRoute roles={["Recruiter", "CompanyAdmin"]}><JobManagement /></ProtectedRoute>} />
+        <Route path="/recruiter-dashboard/candidates" element={<ProtectedRoute roles={["Recruiter", "CompanyAdmin"]}><CandidateTracker /></ProtectedRoute>} />
 
-                {/* Full Recruiter Portal Integration */}
-                <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
-                <Route path="/recruiter-dashboard/jobs" element={<JobManagement />} />
-                <Route path="/recruiter-dashboard/candidates" element={<CandidateTracker />} />
-            </Routes>
-        </BrowserRouter>
-    );
+        <Route path="/hiring-dashboard" element={<ProtectedRoute roles={["HiringManager"]}><Placeholder title="Hiring Manager Dashboard" /></ProtectedRoute>} />
+        <Route path="/admin-dashboard" element={<ProtectedRoute roles={["Admin", "SuperAdmin"]}><Placeholder title="Platform Admin Dashboard" /></ProtectedRoute>} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
 export default App;
