@@ -1,9 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Profile from './Profile';
-import ResumeManager from './ResumeManager';
-import SkillsSection from './SkillsSection';
-import EducationSection from './EducationSection';
-import ExperienceSection from './ExperienceSection';
 import JobSearch from './JobSearch';
 import ApplicationTracker from './ApplicationTracker';
 import './CandidateDashboard.css';
@@ -14,13 +10,8 @@ function CandidateDashboard() {
     // 1. localStorage එකෙන් දත්ත කියවමු
     const storedUser = localStorage.getItem("user");
     const storedToken = localStorage.getItem("token");
-    
-    let candidateId = null;
 
-    // Debugging Logs
-    console.log("--- DEBUGGING LOCALSTORAGE ---");
-    console.log("Raw Stored User Data:", storedUser);
-    console.log("Stored Token:", storedToken);
+    let candidateId = null;
 
     if (storedToken) {
         try {
@@ -35,8 +26,7 @@ function CandidateDashboard() {
             );
 
             const tokenData = JSON.parse(jsonPayload);
-            console.log("🎯 Decoded Token Data:", tokenData);
-            
+
             // Token එක ඇතුළේ තියෙන 'sub' claim එකෙන් User ID එක ගන්නවා
             candidateId = tokenData.sub || tokenData.nameid;
         } catch (e) {
@@ -54,19 +44,23 @@ function CandidateDashboard() {
         }
     }
 
-    console.log("Final Extracted Candidate ID:", candidateId);
-    console.log("------------------------------");
+    // 🚪 Logout Function එක
+    const handleLogout = () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login"; // Login පේජ් එකට රීඩිරෙක්ට් කරයි
+    };
 
     // 2. Auth ID එකක් හොයාගන්න බැරි වුණොත් පෙන්වන Error Screen එක
     if (!candidateId) {
         return (
             <div style={{ padding: '60px 20px', textAlign: 'center', fontFamily: 'Arial, sans-serif' }}>
-                <div style={{ 
-                    maxWidth: '450px', 
-                    margin: '0 auto', 
-                    padding: '30px', 
-                    border: '1px solid #fee2e2', 
-                    borderRadius: '8px', 
+                <div style={{
+                    maxWidth: '450px',
+                    margin: '0 auto',
+                    padding: '30px',
+                    border: '1px solid #fee2e2',
+                    borderRadius: '8px',
                     backgroundColor: '#fef2f2',
                     boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
                 }}>
@@ -74,8 +68,8 @@ function CandidateDashboard() {
                     <p style={{ color: '#4b5563', fontSize: '14px', marginBottom: '20px' }}>
                         Your login session details could not be found or have expired.
                     </p>
-                    
-                    <div style={{ textRendering: 'optimizeLegibility', textAlign: 'left', backgroundColor: '#fff', padding: '12px', borderRadius: '6px', border: '1px solid #e5e7eb', marginBottom: '20px', fontSize: '12px', color: '#374151' }}>
+
+                    <div style={{ textAlign: 'left', backgroundColor: '#fff', padding: '12px', borderRadius: '6px', border: '1px solid #e5e7eb', marginBottom: '20px', fontSize: '12px', color: '#374151' }}>
                         <strong>💡 How to fix this:</strong>
                         <ul style={{ margin: '5px 0 0 15px', padding: '0' }}>
                             <li>Make sure you log in via the <code>/login</code> page first.</li>
@@ -83,14 +77,14 @@ function CandidateDashboard() {
                         </ul>
                     </div>
 
-                    <button 
-                        onClick={() => window.location.href = "/login"} 
-                        style={{ 
-                            padding: '10px 20px', 
-                            cursor: 'pointer', 
-                            background: '#2563eb', 
-                            color: '#fff', 
-                            border: 'none', 
+                    <button
+                        onClick={() => window.location.href = "/login"}
+                        style={{
+                            padding: '10px 20px',
+                            cursor: 'pointer',
+                            background: '#2563eb',
+                            color: '#fff',
+                            border: 'none',
                             borderRadius: '6px',
                             fontWeight: 'bold',
                             transition: 'background 0.2s'
@@ -109,60 +103,45 @@ function CandidateDashboard() {
         <div className="dashboard-container">
             {/* Sidebar Section */}
             <aside className="sidebar">
-                <div className="logo-area">
-                    <h2 className="logo-text">HirePath AI</h2>
-                    <p className="sub-text">Candidate Panel</p>
+                {/* උඩ කොටස: Logo සහ Tabs */}
+                <div className="sidebar-top">
+                    <div className="logo-area">
+                        <h2 className="logo-text">HirePath AI</h2>
+                        <p className="sub-text">Candidate Panel</p>
+                    </div>
+
+                    <ul className="tab-list">
+                        <li>
+                            <button className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+                                👤 My Profile
+                            </button>
+                        </li>
+                        <li>
+                            <button className={`tab-button ${activeTab === 'jobsearch' ? 'active' : ''}`} onClick={() => setActiveTab('jobsearch')}>
+                                🔍 Search Jobs
+                            </button>
+                        </li>
+                        <li>
+                            <button className={`tab-button ${activeTab === 'tracker' ? 'active' : ''}`} onClick={() => setActiveTab('tracker')}>
+                                📊 Track Applications
+                            </button>
+                        </li>
+                    </ul>
                 </div>
 
-                <ul className="tab-list">
-                    <li>
-                        <button className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-                            👤 My Profile
-                        </button>
-                    </li>
-                    <li>
-                        <button className={`tab-button ${activeTab === 'jobsearch' ? 'active' : ''}`} onClick={() => setActiveTab('jobsearch')}>
-                            🔍 Search Jobs
-                        </button>
-                    </li>
-                    <li>
-                        <button className={`tab-button ${activeTab === 'tracker' ? 'active' : ''}`} onClick={() => setActiveTab('tracker')}>
-                            📊 Track Applications
-                        </button>
-                    </li>
-                </ul>
+                {/* පහළ කොටස: Logout බටන් එක */}
+                <div className="sidebar-bottom">
+                    <button className="logout-button" onClick={handleLogout}>
+                        🚪 Logout
+                    </button>
+                </div>
             </aside>
 
             {/* Main Content Area */}
             <main className="content-area">
                 {activeTab === 'profile' && (
                     <div className="profile-all-in-one">
-                        
-                        {/* 1. Personal Information Component */}
-                        <div className="dashboard-card-section">
-                            <Profile userId={candidateId} />
-                        </div>
-                        
-                        {/* 2. Resume Manager Component */}
-                        <div className="dashboard-card-section">
-                            <ResumeManager userId={candidateId} />
-                        </div>
-                        
-                        {/* 3. Skills Section Component */}
-                        <div className="dashboard-card-section">
-                            <SkillsSection userId={candidateId} />
-                        </div>
-                        
-                        {/* 4. Education Section Component */}
-                        <div className="dashboard-card-section">
-                            <EducationSection userId={candidateId} />
-                        </div>
-                        
-                        {/* 5. Experience Section Component */}
-                        <div className="dashboard-card-section">
-                            <ExperienceSection userId={candidateId} />
-                        </div>
-                        
+                        <Profile userId={candidateId} />
                     </div>
                 )}
 
@@ -171,7 +150,7 @@ function CandidateDashboard() {
                         <JobSearch userId={candidateId} />
                     </div>
                 )}
-                
+
                 {activeTab === 'tracker' && (
                     <div className="card">
                         <ApplicationTracker userId={candidateId} />
