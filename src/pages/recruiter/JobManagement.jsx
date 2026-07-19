@@ -142,7 +142,7 @@ const JobManagement = () => {
         }
       }
 
-      // Input එකෙන් එන skills කෝමා වලින් වෙන් කර පිරිසිදු කර ගැනීම
+      // Splitting skills from input by commas and cleaning them up
       const skillsArray = jobForm.skills
         .split(',')
         .map(s => s.trim())
@@ -176,7 +176,7 @@ const JobManagement = () => {
         alert(isEditing ? "Job updated successfully!" : "Job posted successfully!");
         
         if (isEditing) {
-          // ⚡ [CRITICAL FIX] Deep Cloning State Injection මඟින් React බලෙන්ම re-render කරවනවා
+          // ⚡ [CRITICAL FIX] Force React to re-render using Deep Cloning State Injection
           setJobs(prevJobs => {
             const nextJobs = prevJobs.map(job => {
               if (job.id === currentJobId) {
@@ -187,16 +187,16 @@ const JobManagement = () => {
                   company: { ...job.company, name: targetCompanyName },
                   departmentName: targetDeptName,
                   department: { ...job.department, name: targetDeptName },
-                  skills: [...skillsArray], // New Array Reference එකක් දෙනවා re-render වෙන්නම
+                  skills: [...skillsArray], // Providing a new array reference to guarantee a re-render
                   status: jobForm.status
                 };
               }
               return job;
             });
-            return [...nextJobs]; // Array Reference එකත් අලුත්ම එකක් කරනවා
+            return [...nextJobs]; // Making the outer array reference completely new as well
           });
         } else {
-          // අලුතින් Job එකක් දැම්මොත් විතරක් මුළු ලිස්ට් එකම fetch කරනවා
+          // Fetch the entire list only if a new job is added
           await loadAllData();
         }
 
