@@ -11,6 +11,10 @@ import CandidateDashboard from "./pages/candidate/CandidateDashboard";
 import Profile from "./pages/candidate/Profile";
 import ResumeManager from "./pages/candidate/ResumeManager";
 import SkillsSection from "./pages/candidate/SkillsSection";
+// Recruiter Portal Components Import
+import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
+import JobManagement from "./pages/recruiter/JobManagement";
+import CandidateTracker from "./pages/recruiter/CandidateTracker";
 
 function Placeholder({ title }) {
     return (
@@ -26,6 +30,7 @@ function App() {
         <BrowserRouter>
             <Routes>
                 {/* Auth & Home Routes */}
+                {/* Public & Auth Routes */}
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
@@ -44,6 +49,11 @@ function App() {
                 <Route path="/recruiter-dashboard" element={<Placeholder title="Recruiter Dashboard" />} />
                 <Route path="/hiring-dashboard" element={<Placeholder title="Hiring Manager Dashboard" />} />
                 <Route path="/admin-dashboard" element={<Placeholder title="Admin Dashboard" />} />
+
+                {/* Full Recruiter Portal Integration */}
+                <Route path="/recruiter-dashboard" element={<RecruiterDashboard />} />
+                <Route path="/recruiter-dashboard/jobs" element={<JobManagement />} />
+                <Route path="/recruiter-dashboard/candidates" element={<CandidateTracker />} />
             </Routes>
         </BrowserRouter>
     );
