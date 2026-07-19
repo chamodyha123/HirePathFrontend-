@@ -5,7 +5,6 @@ const candidateService = {
     
     // ලොගින් වෙලා ඉන්න Candidate ගේ Profile එක ලබා ගැනීම
     getProfile: async (userId) => {
-        // 💡 ලොගින් වෙලා ඉන්න යූසර්ගේ data ඇදලා ගන්න query parameter එකක් විදිහට userId එක යැවීම සුරක්ෂිතයි
         const response = await api.get(`/Candidate?userId=${userId}`);
         return response.data;
     },
@@ -18,16 +17,12 @@ const candidateService = {
 
     // අලුතින් Profile එකක් නිර්මාණය කිරීම
     createProfile: async (userId, profileData) => {
-        // 💡 FIX: Backend .NET DTO Wrapper එකට ගැලපෙන්න { dto: profileData } ලෙසත්, 
-        // query path එකට userId එකත් එකතු කර ඇත.
         const response = await api.post(`/Candidate?userId=${userId}`, { dto: profileData });
         return response.data;
     },
 
     // Profile එක Full Update කිරීම (PUT)
     updateProfile: async (userId, profileData) => {
-        // 💡 FIX: UpdateCandidateProfileDto එකේ Id/UserId නැති නිසා, 
-        // backend එක හඳුනාගන්නේ query එකේ යන userId එකෙන් සහ { dto: ... } wrapper එකෙනි.
         const response = await api.put(`/Candidate?userId=${userId}`, { dto: profileData });
         return response.data;
     },
@@ -100,14 +95,20 @@ const candidateService = {
         return response.data;
     },
 
-    // Resume එකක් Upload කිරීම
-    uploadResume: async (file, isPrimary) => {
+    // 💡 Fix: userId එක ලබාගෙන එය Endpoint එකට Query එකක් විදියට සහ FormData නිවැරදිව සැකසීම
+    uploadResume: async (file, isPrimary = true, userId) => {
         const formData = new FormData();
         formData.append('File', file);
-        formData.append('IsPrimary', String(isPrimary));
+        formData.append('IsPrimary', isPrimary.toString()); // බූලියන් එක String එකක් ලෙස යැවීම .NET වලට පහසුයි
 
-        // 💡 Content-Type Header එක අතින් දාන්නේ නැත (Axios විසින් Boundary එක ඇතුළුව Auto සකසයි)
-        const response = await api.post('/Candidate/resume', formData);
+        // URL එකට userId එක සෙට් කිරීම (Backend Controller එක අනුව)
+        const url = userId ? `/Candidate/resume?userId=${userId}` : '/Candidate/resume';
+
+        const response = await api.post(url, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data' // File upload සඳහා අනිවාර්ය වේ
+            }
+        });
         return response.data;
     },
 
@@ -130,7 +131,11 @@ const candidateService = {
         const formData = new FormData();
         formData.append('File', file);
 
-        const response = await api.post('/Candidate/profile-picture', formData);
+        const response = await api.post('/Candidate/profile-picture', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
         return response.data;
     },
 
