@@ -1,79 +1,109 @@
 import React, { useState, useEffect } from 'react';
-import { candidateService } from '../../api/candidateService';
-import { ProfileForm } from './ProfileForm'; // 💡 Named Import එකක් ලෙස සඟල වරහන් ඇතුළත කැඳවා ඇත
+import axios from 'axios';
+import { ProfileForm } from './ProfileForm'; 
 
 function Profile() {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [isEditing, setIsEditing] = useState(false); // 💡 Form එක පෙන්වනවාද නැද්ද යන්න තීරණය කරන State එක
+    const [profile, setProfile] = useState(null);
+    const [loading, setLoading] = useState(true);
+    // 💡 [විසඳුම] Form එක කෙලින්ම බලාගන්න Edit Mode එක default TRUE කළා
+    const [isEditing, setIsEditing] = useState(true); 
 
-  const loadProfileData = async () => {
-    try {
-      setLoading(true);
-      const res = await candidateService.getAllCandidates();
-      // Backend එකෙන් Profile එකක් ආවොත් ඒක දානවා, නැත්නම් null
-      if (res.data) {
-        setProfile(res.data);
-      }
-    } catch (err) {
-      console.error("Error fetching profile data:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    const fetchProfileData = async () => {
+        try {
+            setLoading(true);
+            const token = localStorage.getItem("token");
+            
+            if (!token) {
+                console.error("No token found!");
+                setLoading(false);
+                return;
+            }
 
-  useEffect(() => {
-    loadProfileData();
-  }, []);
+            const response = await axios.get('http://localhost:5139/api/Candidate', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'accept': '*/*'
+                }
+            });
 
-  if (loading) return <p>Loading Profile Information...</p>;
+            console.log("🔍 Live Backend Response:", response.data);
 
-  return (
-    <div>
-      {/* 💡 1. Edit Mode එක True නම් ProfileForm එක පෙන්වයි */}
-      {isEditing ? (
-        <ProfileForm 
-          existingProfile={profile} 
-          onSave={() => {
-            setIsEditing(false);
-            loadProfileData(); // Save වුණු පසු අලුත් දත්ත ලෝඩ් කරයි
-          }}
-          onCancel={() => setIsEditing(false)} // Cancel කළොත් Form එක වහයි
-        />
-      ) : (
-        /* 💡 2. Edit Mode එක False නම් සාමාන්‍ය Profile දත්ත පෙන්වයි */
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-          <div style={{ display: 'flex', justifyContent: 'between', alignItems: 'center', borderBottom: '2px solid #e2e8f0', paddingBottom: '15px' }}>
-            <h2 style={{ margin: 0, color: '#0f172a' }}>👤 My Profile View</h2>
-            <button 
-              onClick={() => setIsEditing(true)} 
-              style={{ padding: '8px 16px', backgroundColor: '#38bdf8', border: 'none', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}
-            >
-              {profile ? "✏️ Edit Profile" : "🆕 Create Profile"}
-            </button>
-          </div>
+            // 💡 කෙලින්ම Object එකක් එන නිසා සෙට් කරනවා
+            if (response.data) {
+                setProfile(response.data);
+            } else {
+                setProfile(null); 
+            }
+            
+        } catch (error) {
+            console.error("Error fetching profile:", error);
+            setProfile(null); 
+        } finally {
+            setLoading(false);
+        }
+    };
 
-          {profile ? (
-            <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '10px', color: '#334155' }}>
-              <p><strong>Name:</strong> {profile.firstName} {profile.lastName}</p>
-              <p><strong>Headline:</strong> {profile.headline || 'Not provided'}</p>
-              <p><strong>Summary:</strong> {profile.summary || 'Not provided'}</p>
-              <p><strong>Location:</strong> {profile.location || 'Not provided'}</p>
-              <p><strong>Phone:</strong> {profile.phoneNumber || 'Not provided'}</p>
-              <p><strong>Experience:</strong> {profile.yearsOfExperience} Years</p>
-              {profile.linkedInUrl && <p><strong>LinkedIn:</strong> <a href={profile.linkedInUrl} target="_blank" rel="noreferrer">{profile.linkedInUrl}</a></p>}
-              {profile.portfolioUrl && <p><strong>Portfolio:</strong> <a href={profile.portfolioUrl} target="_blank" rel="noreferrer">{profile.portfolioUrl}</a></p>}
-            </div>
-          ) : (
-            <div style={{ textAlign: 'center', padding: '30px', border: '1px dashed #cbd5e1', borderRadius: '8px', marginTop: '20px' }}>
-              <p style={{ color: '#64748b' }}>You haven't created a professional profile yet.</p>
-              <p style={{ fontSize: '14px', color: '#94a3b8' }}>Click the "Create Profile" button above to get started.</p>
-            </div>
-          )}
+    useEffect(() => {
+        fetchProfileData();
+    }, []);
+
+    if (loading) return <div style={{ padding: '20px', color: '#666' }}>⏳ Loading Profile Data...</div>;
+
+    return (
+        <div className="profile-container" style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+            
+            {/* profile එකක් නැත්නම් හෝ Edit Mode එක True නම් Form එක පෙන්වනවා */}
+            {!profile || isEditing ? (
+                <ProfileForm 
+                    userId={profile?.userId || 3} 
+                    existingProfile={profile} 
+                    onSave={() => {
+                        setIsEditing(false); // Save වුණාම View Mode එකට යනවා
+                        fetchProfileData(); 
+                    }}
+                    onCancel={profile ? () => setIsEditing(false) : null} 
+                />
+            ) : (
+                /* Profile View Area */
+                <div className="profile-view-card" style={{ background: '#fff', padding: '25px', borderRadius: '10px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+                    <div style={{ borderBottom: '2px solid #f3f4f6', paddingBottom: '15px', marginBottom: '15px' }}>
+                        <h2 style={{ margin: '0 0 5px 0', color: '#1f2937' }}>{profile?.firstName} {profile?.lastName}</h2>
+                        <p style={{ margin: 0, color: '#2563eb', fontWeight: '600' }}>{profile?.headline}</p>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', fontSize: '14px', color: '#4b5563' }}>
+                        <p><strong>📍 Location:</strong> {profile?.location}</p>
+                        <p><strong>📞 Phone:</strong> {profile?.phoneNumber}</p>
+                        <p><strong>💼 Experience:</strong> {profile?.yearsOfExperience} Years</p>
+                        <p><strong>🌐 Work Mode:</strong> {profile?.preferredWorkMode}</p>
+                        <p><strong>🌍 Nationality:</strong> {profile?.nationality}</p>
+                        <p><strong>🗣️ Languages:</strong> {profile?.languages}</p>
+                    </div>
+
+                    <div style={{ marginTop: '20px' }}>
+                        <h4 style={{ margin: '0 0 8px 0', color: '#374151' }}>📝 Summary</h4>
+                        <p style={{ fontSize: '14px', color: '#6b7280', lineHeight: '1.5', margin: 0 }}>{profile?.summary}</p>
+                    </div>
+
+                    <button 
+                        onClick={() => setIsEditing(true)} 
+                        style={{ 
+                            marginTop: '25px', 
+                            padding: '10px 20px', 
+                            backgroundColor: '#2563eb', 
+                            color: '#fff', 
+                            border: 'none', 
+                            borderRadius: '6px', 
+                            cursor: 'pointer',
+                            fontWeight: 'bold'
+                        }}
+                    >
+                        ✏️ Edit Profile Details
+                    </button>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 
 export default Profile;
