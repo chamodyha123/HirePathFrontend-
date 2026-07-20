@@ -1,3 +1,49 @@
+.tracker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.tracker-header h2 {
+    margin: 0;
+}
+
+.btn-secondary {
+    background-color: #f1f5f9;
+    color: #334155;
+    border: 1px solid #cbd5e1;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: #e2e8f0;
+}
+
+.btn-secondary:disabled {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.tracker-error {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.tracker-empty {
+    color: #64748b;
+    font-size: 14px;
+}
+
 .tracker-table {
     width: 100%;
     border-collapse: collapse;
@@ -16,11 +62,82 @@
 }
 
 .status-badge {
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 4px;
     font-size: 12px;
     font-weight: bold;
+    white-space: nowrap;
 }
 
-.status-badge.pending { background-color: #fef08a; color: #a16207; }
-.status-badge.reviewed { background-color: #bfdbfe; color: #1e40af; }
+/* 1=Applied 2=UnderReview 3=Shortlisted 4=InterviewScheduled
+   5=Interviewed 6=Offered 7=Hired 8=Rejected 9=Withdrawn */
+.status-badge.status-1 { background-color: #e0e7ff; color: #3730a3; }
+.status-badge.status-2 { background-color: #fef08a; color: #a16207; }
+.status-badge.status-3 { background-color: #bfdbfe; color: #1e40af; }
+.status-badge.status-4 { background-color: #ccfbf1; color: #0f766e; }
+.status-badge.status-5 { background-color: #a5f3fc; color: #155e75; }
+.status-badge.status-6 { background-color: #fed7aa; color: #9a3412; }
+.status-badge.status-7 { background-color: #bbf7d0; color: #166534; }
+.status-badge.status-8 { background-color: #fecaca; color: #991b1b; }
+.status-badge.status-9 { background-color: #e5e7eb; color: #4b5563; }
+
+.btn-withdraw {
+    background-color: #fff1f2;
+    color: #be123c;
+    border: 1px solid #fecdd3;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.btn-withdraw:hover:not(:disabled) {
+    background-color: #ffe4e6;
+}
+
+.btn-withdraw:disabled {
+    opacity: 0.4;
+    cursor: default;
+    color: #9ca3af;
+    border-color: #e5e7eb;
+    background-color: #f9fafb;
+}
+
+.tracker-detail-row td {
+    background-color: #f9fafb;
+    padding: 16px !important;
+}
+
+.tracker-detail-loading,
+.tracker-detail-empty {
+    color: #64748b;
+    font-size: 13px;
+    margin: 0;
+}
+
+.interview-detail-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    font-size: 13px;
+}
+
+.interview-detail-card:last-child {
+    margin-bottom: 0;
+}
+
+.interview-detail-row {
+    display: flex;
+    gap: 8px;
+    padding: 3px 0;
+}
+
+.interview-detail-label {
+    font-weight: 600;
+    color: #475569;
+    min-width: 80px;
+}

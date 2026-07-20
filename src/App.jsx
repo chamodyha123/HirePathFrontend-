@@ -12,6 +12,7 @@ import SkillsSection from "./pages/candidate/SkillsSection";
 import RecruiterDashboard from "./pages/recruiter/RecruiterDashboard";
 import JobManagement from "./pages/recruiter/JobManagement";
 import CandidateTracker from "./pages/recruiter/CandidateTracker";
+import HiringDashboard from "./pages/hiring/HiringDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PlatformAdminLayout from "./layouts/PlatformAdminLayout";
 import PlatformAdminDashboard from "./pages/platform-admin/PlatformAdminDashboard";
@@ -56,7 +57,7 @@ function App() {
         <Route path="/recruiter-dashboard/jobs" element={<ProtectedRoute roles={["Recruiter", "CompanyAdmin"]}><JobManagement /></ProtectedRoute>} />
         <Route path="/recruiter-dashboard/candidates" element={<ProtectedRoute roles={["Recruiter", "CompanyAdmin"]}><CandidateTracker /></ProtectedRoute>} />
 
-        <Route path="/hiring-dashboard" element={<ProtectedRoute roles={["HiringManager"]}><Placeholder title="Hiring Manager Dashboard" /></ProtectedRoute>} />
+        <Route path="/hiring-dashboard" element={<ProtectedRoute roles={["HiringManager"]}><HiringDashboard /></ProtectedRoute>} />
 
         <Route path="/admin-dashboard" element={<Navigate to="/platform-admin" replace />} />
         <Route path="/platform-admin" element={<AdminGuard><PlatformAdminLayout /></AdminGuard>}>
