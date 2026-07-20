@@ -7,7 +7,14 @@ function ProtectedRoute({ children, roles = [] }) {
   let userRoles = [];
   try {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    userRoles = user.roles || JSON.parse(localStorage.getItem("roles") || "[]");
+    const storedRoles = JSON.parse(localStorage.getItem("roles") || "[]");
+    const rawRoles = Array.isArray(user.roles)
+      ? user.roles
+      : user.role
+        ? [user.role]
+        : storedRoles;
+
+    userRoles = rawRoles.map((role) => String(role).trim().toLowerCase());
   } catch {
     userRoles = [];
   }
@@ -16,7 +23,12 @@ function ProtectedRoute({ children, roles = [] }) {
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (roles.length > 0 && !roles.some((role) => userRoles.includes(role))) {
+  const allowedRoles = roles.map((role) => String(role).trim().toLowerCase());
+
+  if (
+    allowedRoles.length > 0 &&
+    !allowedRoles.some((role) => userRoles.includes(role))
+  ) {
     return <Navigate to="/" replace />;
   }
 

@@ -9,6 +9,7 @@ function Register() {
         email: "",
         password: "",
         confirmPassword: "",
+        role: "Candidate",
     });
 
     const [message, setMessage] = useState("");
@@ -25,10 +26,7 @@ function Register() {
         setMessage("");
 
         try {
-            await api.post("/Auth/register", {
-                ...form,
-                role: "Candidate",
-            });
+            await api.post("/Auth/register", form);
             localStorage.setItem("verifyEmail", form.email);
 
             setType("success");
@@ -68,6 +66,15 @@ function Register() {
                     <div className="form-group">
                         <label>Email</label>
                         <input type="email" name="email" value={form.email} onChange={change} required />
+                    </div>
+
+                    <div className="form-group">
+                        <label>Role</label>
+                        <select name="role" value={form.role} onChange={change}>
+                            <option value="Candidate">Candidate</option>
+                            <option value="Recruiter">Recruiter</option>
+                            <option value="HiringManager">Hiring Manager</option>
+                        </select>
                     </div>
 
                     <div className="form-group">

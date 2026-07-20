@@ -1,36 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 
-// ---- Mock service, standing in for ../../api/platformAdminService ----
-// In your real project, delete this block and use:
-//   import platformAdminService from '../../api/platformAdminService';
-const platformAdminService = {
-    getDashboardStats: () =>
-        new Promise((resolve) => {
-            setTimeout(() => {
-                resolve({
-                    totalCompanies: 18,
-                    pendingCompanies: Math.floor(Math.random() * 5) + 1,
-                    approvedCompanies: 14,
-                    suspendedCompanies: 1,
-                    totalUsers: 312 + Math.floor(Math.random() * 6),
-                    totalJobs: 82,
-                    totalApplications: 419 + Math.floor(Math.random() * 4),
-                });
-            }, 400);
-        }),
-    getRecentActivity: () =>
-        new Promise((resolve) => {
-            setTimeout(() => {
-                resolve([
-                    { color: 'var(--hp-green)', message: 'A company was approved' },
-                    { color: 'var(--hp-violet)', message: 'A new application was submitted' },
-                    { color: 'var(--hp-amber)', message: 'A company is pending review' },
-                    { color: 'var(--hp-cyan)', message: 'A new user registered' },
-                ]);
-            }, 400);
-        }),
-};
-// ------------------------------------------------------------------
+import platformAdminService from '../../api/platformAdminService';
 
 const POLL_INTERVAL_MS = 5000;
 

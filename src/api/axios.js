@@ -1,22 +1,23 @@
 import axios from "axios";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ||
+  "http://localhost:5139/api";
+
 const api = axios.create({
-  // In development, Vite proxies /api to the ASP.NET backend.
-  // In production, set VITE_API_URL to the deployed backend URL.
-  baseURL: import.meta.env.VITE_API_URL || "/api",
+  baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
+  timeout: 20000,
 });
 
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
-
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-
     return config;
   },
   (error) => Promise.reject(error)
@@ -25,18 +26,18 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isLoginRequest = error.config?.url?.toLowerCase().includes("/auth/login");
+
+    if (error.response?.status === 401 && !isLoginRequest) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       localStorage.removeItem("roles");
-
-      if (!window.location.pathname.startsWith("/login")) {
-        window.location.href = "/login";
-      }
+      window.location.assign("/login");
     }
 
     return Promise.reject(error);
   }
 );
 
+export { API_BASE_URL };
 export default api;
