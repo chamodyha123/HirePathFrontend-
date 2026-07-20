@@ -1062,3 +1062,221 @@ input[name="otp"] {
     .login-panel { padding: 45px 20px; min-height: 590px; }
     .login-form-wrap h2 { font-size: 32px; }
 }
+/* =========================================================
+   Company registration page
+   ========================================================= */
+.company-registration-page {
+    min-height: 100vh;
+    padding: 42px 20px 72px;
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    color: #172033;
+    background:
+      radial-gradient(circle at 10% 0%, rgba(47, 128, 237, 0.16), transparent 32%),
+      radial-gradient(circle at 90% 8%, rgba(91, 61, 245, 0.14), transparent 30%),
+      #f5f7fc;
+}
+
+.company-registration-shell {
+    width: min(1120px, 100%);
+    margin: 0 auto;
+}
+
+.company-registration-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 26px;
+    color: #315fcf;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.company-registration-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 26px;
+    padding: 28px 30px;
+    border: 1px solid rgba(94, 112, 161, 0.14);
+    border-radius: 22px;
+    background: linear-gradient(135deg, #0b1737, #24246d);
+    box-shadow: 0 22px 60px rgba(28, 42, 90, 0.16);
+    color: #fff;
+}
+
+.company-registration-icon {
+    flex: 0 0 62px;
+    width: 62px;
+    height: 62px;
+    display: grid;
+    place-items: center;
+    border-radius: 18px;
+    font-size: 26px;
+    background: linear-gradient(135deg, #2f80ed, #7357ff);
+}
+
+.company-registration-header span {
+    color: #55d7e0;
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 1.5px;
+}
+
+.company-registration-header h1 {
+    margin: 6px 0 8px;
+    font-size: clamp(30px, 4vw, 44px);
+    letter-spacing: -1.3px;
+}
+
+.company-registration-header p {
+    margin: 0;
+    color: #cbd5ee;
+    line-height: 1.6;
+}
+
+.company-registration-form,
+.company-registration-success {
+    border: 1px solid rgba(94, 112, 161, 0.14);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: 0 18px 50px rgba(40, 55, 100, 0.1);
+}
+
+.company-registration-form {
+    padding: 30px;
+}
+
+.company-registration-form section + section {
+    margin-top: 30px;
+    padding-top: 28px;
+    border-top: 1px solid #e8ecf5;
+}
+
+.company-registration-form h2 {
+    margin: 0 0 20px;
+    color: #172033;
+    font-size: 21px;
+}
+
+.company-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.company-form-wide {
+    grid-column: 1 / -1;
+}
+
+.company-registration-form .form-group {
+    margin: 0;
+}
+
+.company-registration-form label {
+    display: block;
+    margin-bottom: 8px;
+    color: #344057;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.company-registration-form input,
+.company-registration-form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    border: 1px solid #d9dfeb;
+    border-radius: 12px;
+    padding: 13px 14px;
+    outline: none;
+    color: #172033;
+    background: #fbfcff;
+    font: inherit;
+    transition: border-color .2s, box-shadow .2s, background .2s;
+}
+
+.company-registration-form textarea {
+    resize: vertical;
+    min-height: 110px;
+}
+
+.company-registration-form input:focus,
+.company-registration-form textarea:focus {
+    border-color: #4c73ee;
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(76, 115, 238, 0.13);
+}
+
+.company-submit {
+    width: 100%;
+    margin-top: 30px;
+    border: 0;
+    border-radius: 13px;
+    padding: 16px 20px;
+    color: #fff;
+    background: linear-gradient(90deg, #2f80ed, #5b3df5);
+    font-size: 16px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 14px 30px rgba(61, 91, 245, .24);
+}
+
+.company-submit:disabled {
+    opacity: .68;
+    cursor: wait;
+}
+
+.company-registration-page .message {
+    margin: 0 0 22px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-weight: 700;
+}
+
+.company-registration-page .message.success {
+    color: #166534;
+    border: 1px solid #bbf7d0;
+    background: #f0fdf4;
+}
+
+.company-registration-page .message.error {
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+}
+
+.company-registration-success {
+    padding: 54px 30px;
+    text-align: center;
+}
+
+.company-registration-success > svg {
+    color: #16a34a;
+    font-size: 58px;
+}
+
+.company-registration-success h2 {
+    margin: 18px 0 8px;
+    font-size: 30px;
+}
+
+.company-registration-success p {
+    color: #64748b;
+}
+
+.company-registration-success a {
+    display: inline-flex;
+    margin-top: 14px;
+    color: #315fcf;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+@media (max-width: 720px) {
+    .company-registration-page { padding: 24px 14px 50px; }
+    .company-registration-header { align-items: flex-start; padding: 22px 20px; }
+    .company-registration-icon { flex-basis: 50px; width: 50px; height: 50px; font-size: 21px; }
+    .company-registration-form { padding: 22px 18px; }
+    .company-form-grid { grid-template-columns: 1fr; }
+    .company-form-wide { grid-column: auto; }
+}

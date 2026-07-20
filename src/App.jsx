@@ -5,6 +5,7 @@ import Register from "./pages/auth/Register";
 import VerifyEmail from "./pages/auth/VerifyEmail";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import ResetPassword from "./pages/auth/ResetPassword";
+import CompanyRegistration from "./pages/auth/CompanyRegistration";
 import CandidateDashboard from "./pages/candidate/CandidateDashboard";
 import Profile from "./pages/candidate/Profile";
 import ResumeManager from "./pages/candidate/ResumeManager";
@@ -42,7 +43,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/company-registration" element={<Placeholder title="Company Registration" />} />
+        <Route path="/company-registration" element={<CompanyRegistration />} />
         <Route path="/verify-email" element={<VerifyEmail />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
