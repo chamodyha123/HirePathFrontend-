@@ -50,7 +50,7 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
 
         <Route path="/candidate-dashboard" element={<ProtectedRoute roles={["Candidate"]}><CandidateDashboard /></ProtectedRoute>} />
-        <Route path="/candidate/profile" element={<ProtectedRoute roles={["Candidate"]}><Profile userId={1} /></ProtectedRoute>} />
+        <Route path="/candidate/profile" element={<ProtectedRoute roles={["Candidate"]}><Profile /></ProtectedRoute>} />
         <Route path="/candidate/resumes" element={<ProtectedRoute roles={["Candidate"]}><ResumeManager /></ProtectedRoute>} />
         <Route path="/candidate/skills" element={<ProtectedRoute roles={["Candidate"]}><SkillsSection /></ProtectedRoute>} />
 

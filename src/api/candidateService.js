@@ -1,149 +1,50 @@
-import api from './axios'; // ඔයා හදපු axios instance එක
+import api, { API_BASE_URL } from './axios';
+
+const API_ORIGIN = API_BASE_URL.replace(/\/api\/?$/i, '');
+
+export const toPublicFileUrl = (filePath) => {
+  if (!filePath) return '';
+  if (/^https?:\/\//i.test(filePath)) return filePath;
+  return `${API_ORIGIN}${filePath.startsWith('/') ? '' : '/'}${filePath}`;
+};
 
 const candidateService = {
-    // ============ PROFILE MANAGEMENT ============
-    
-    // ලොගින් වෙලා ඉන්න Candidate ගේ Profile එක ලබා ගැනීම
-    getProfile: async (userId) => {
-        const response = await api.get(`/Candidate?userId=${userId}`);
-        return response.data;
-    },
+  // The backend identifies the logged-in candidate from the JWT token.
+  getProfile: async () => (await api.get('/Candidate')).data,
+  getProfileById: async (userId) => (await api.get(`/Candidate/${userId}`)).data,
+  createProfile: async (profileData) => (await api.post('/Candidate', profileData)).data,
+  updateProfile: async (profileData) => (await api.put('/Candidate', profileData)).data,
+  deleteProfile: async () => (await api.delete('/Candidate')).data,
 
-    // Admin/Recruiter කෙනෙකුට වෙනත් User කෙනෙකුගේ ID එක මඟින් Profile එක ලබා ගැනීම
-    getProfileById: async (userId) => {
-        const response = await api.get(`/Candidate/${userId}`);
-        return response.data;
-    },
+  addSkill: async (skillData) => (await api.post('/Candidate/skills', skillData)).data,
+  updateSkill: async (skillId, skillData) => (await api.put(`/Candidate/skills/${skillId}`, skillData)).data,
+  deleteSkill: async (skillId) => (await api.delete(`/Candidate/skills/${skillId}`)).data,
 
-    // අලුතින් Profile එකක් නිර්මාණය කිරීම
-    createProfile: async (userId, profileData) => {
-        const response = await api.post(`/Candidate?userId=${userId}`, { dto: profileData });
-        return response.data;
-    },
+  addEducation: async (educationData) => (await api.post('/Candidate/education', educationData)).data,
+  updateEducation: async (educationId, educationData) => (await api.put(`/Candidate/education/${educationId}`, educationData)).data,
+  deleteEducation: async (educationId) => (await api.delete(`/Candidate/education/${educationId}`)).data,
 
-    // Profile එක Full Update කිරීම (PUT)
-    updateProfile: async (userId, profileData) => {
-        const response = await api.put(`/Candidate?userId=${userId}`, { dto: profileData });
-        return response.data;
-    },
+  addExperience: async (experienceData) => (await api.post('/Candidate/experience', experienceData)).data,
+  updateExperience: async (experienceId, experienceData) => (await api.put(`/Candidate/experience/${experienceId}`, experienceData)).data,
+  deleteExperience: async (experienceId) => (await api.delete(`/Candidate/experience/${experienceId}`)).data,
 
-    // ============ SKILLS MANAGEMENT ============
-    
-    // Skill එකක් ඇතුළත් කිරීම
-    addSkill: async (skillData) => {
-        const response = await api.post('/Candidate/skills', skillData);
-        return response.data;
-    },
+  getResumes: async () => (await api.get('/Candidate/resumes')).data,
+  uploadResume: async (file, isPrimary = false) => {
+    const formData = new FormData();
+    formData.append('File', file);
+    formData.append('IsPrimary', String(isPrimary));
+    return (await api.post('/Candidate/resume', formData)).data;
+  },
+  deleteResume: async (resumeId) => (await api.delete(`/Candidate/resume/${resumeId}`)).data,
+  setPrimaryResume: async (resumeId) => (await api.put(`/Candidate/resume/${resumeId}/primary`)).data,
 
-    // Skill එකක් Update කිරීම
-    updateSkill: async (skillId, skillData) => {
-        const response = await api.put(`/Candidate/skills/${skillId}`, skillData);
-        return response.data;
-    },
-
-    // Skill එකක් Delete කිරීම
-    deleteSkill: async (skillId) => {
-        const response = await api.delete(`/Candidate/skills/${skillId}`);
-        return response.data;
-    },
-
-    // ============ EDUCATION MANAGEMENT ============
-    
-    // Education එකක් ඇතුළත් කිරීම
-    addEducation: async (educationData) => {
-        const response = await api.post('/Candidate/education', educationData);
-        return response.data;
-    },
-
-    // Education එකක් Update කිරීම
-    updateEducation: async (educationId, educationData) => {
-        const response = await api.put(`/Candidate/education/${educationId}`, educationData);
-        return response.data;
-    },
-
-    // Education එකක් Delete කිරීම
-    deleteEducation: async (educationId) => {
-        const response = await api.delete(`/Candidate/education/${educationId}`);
-        return response.data;
-    },
-
-    // ============ EXPERIENCE MANAGEMENT ============
-    
-    // Experience එකක් ඇතුළත් කිරීම
-    addExperience: async (experienceData) => {
-        const response = await api.post('/Candidate/experience', experienceData);
-        return response.data;
-    },
-
-    // Experience එකක් Update කිරීම
-    updateExperience: async (experienceId, experienceData) => {
-        const response = await api.put(`/Candidate/experience/${experienceId}`, experienceData);
-        return response.data;
-    },
-
-    // Experience එකක් Delete කිරීම
-    deleteExperience: async (experienceId) => {
-        const response = await api.delete(`/Candidate/experience/${experienceId}`);
-        return response.data;
-    },
-
-    // ============ RESUME MANAGEMENT ============
-    
-    // ලොගින් වී ඇති පරිශීලකයාගේ සියලුම Resumes ලබා ගැනීම
-    getResumes: async () => {
-        const response = await api.get('/Candidate/resumes');
-        return response.data;
-    },
-
-    // 💡 Fix: userId එක ලබාගෙන එය Endpoint එකට Query එකක් විදියට සහ FormData නිවැරදිව සැකසීම
-    uploadResume: async (file, isPrimary = true, userId) => {
-        const formData = new FormData();
-        formData.append('File', file);
-        formData.append('IsPrimary', isPrimary.toString()); // බූලියන් එක String එකක් ලෙස යැවීම .NET වලට පහසුයි
-
-        // URL එකට userId එක සෙට් කිරීම (Backend Controller එක අනුව)
-        const url = userId ? `/Candidate/resume?userId=${userId}` : '/Candidate/resume';
-
-        const response = await api.post(url, formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data' // File upload සඳහා අනිවාර්ය වේ
-            }
-        });
-        return response.data;
-    },
-
-    // Resume එකක් Delete කිරීම
-    deleteResume: async (resumeId) => {
-        const response = await api.delete(`/Candidate/resume/${resumeId}`);
-        return response.data;
-    },
-
-    // Primary Resume එක ලෙස සැකසීම
-    setPrimaryResume: async (resumeId) => {
-        const response = await api.put(`/Candidate/resume/${resumeId}/primary`);
-        return response.data;
-    },
-
-    // ============ PROFILE PICTURE MANAGEMENT ============
-    
-    // Profile Picture එකක් Upload කිරීම
-    uploadProfilePicture: async (file) => {
-        const formData = new FormData();
-        formData.append('File', file);
-
-        const response = await api.post('/Candidate/profile-picture', formData, {
-            headers: {
-                'Content-Type': 'multipart/form-data'
-            }
-        });
-        return response.data;
-    },
-
-    // Profile Picture එක Delete කිරීම
-    deleteProfilePicture: async () => {
-        const response = await api.delete('/Candidate/profile-picture');
-        return response.data;
-    }
+  getProfilePicture: async () => (await api.get('/Candidate/profile-picture')).data,
+  uploadProfilePicture: async (file) => {
+    const formData = new FormData();
+    formData.append('File', file);
+    return (await api.post('/Candidate/profile-picture', formData)).data;
+  },
+  deleteProfilePicture: async () => (await api.delete('/Candidate/profile-picture')).data,
 };
 
 export default candidateService;

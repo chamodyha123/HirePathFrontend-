@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import candidateService from '../../api/candidateService';
+import candidateService, { toPublicFileUrl } from '../../api/candidateService';
 
 import './Profile.css';
 
@@ -42,16 +41,12 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
 
   const loadProfileSubSections = async () => {
     try {
-      const token = localStorage.getItem("token");
-      if (!token) return;
-      const res = await axios.get('http://localhost:5139/api/Candidate', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (res.data) {
-        setSkillsList(res.data.skills || []);
-        setResumesList(res.data.resumes || []);
-        setExperienceList(res.data.experiences || []);
-        setEducationList(res.data.educations || []);
+      const data = await candidateService.getProfile();
+      if (data) {
+        setSkillsList(data.skills || []);
+        setResumesList(data.resumes || []);
+        setExperienceList(data.experiences || []);
+        setEducationList(data.educations || []);
       }
     } catch (err) {
       console.error("Error loading profile sub-sections:", err);
@@ -91,16 +86,6 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
     }
   }, [existingProfile]);
 
-  const getAxiosConfig = (contentType = 'application/json') => {
-    const token = localStorage.getItem("token");
-    return {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': contentType,
-        'accept': '*/*'
-      }
-    };
-  };
 
   const handleProfileSubmit = async (e) => {
     e.preventDefault();
@@ -112,11 +97,8 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
       }
 
       const profileData = {
-        id: existingProfile ? existingProfile.id : 0, 
-        userId: existingProfile ? existingProfile.userId : Number(userId || 3),
         firstName: formData.firstName,
         lastName: formData.lastName,
-        fullName: `${formData.firstName} ${formData.lastName}`,
         headline: formData.headline || "",
         summary: formData.summary || "",
         location: formData.location || "",
@@ -124,7 +106,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
         linkedInUrl: formData.linkedInUrl || "",
         portfolioUrl: formData.portfolioUrl || "",
         yearsOfExperience: Number(formData.yearsOfExperience) || 0,
-        dateOfBirth: formData.dateOfBirth ? `${formData.dateOfBirth}T00:00:00` : new Date().toISOString(),
+        dateOfBirth: formData.dateOfBirth ? `${formData.dateOfBirth}T00:00:00` : null,
         gender: formData.gender, 
         nationality: formData.nationality,
         maritalStatus: formData.maritalStatus,
@@ -134,10 +116,10 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
       };
 
       if (existingProfile) {
-        await axios.put('http://localhost:5139/api/Candidate', profileData, getAxiosConfig());
+        await candidateService.updateProfile(profileData);
         alert("🎉 Profile updated successfully!");
       } else {
-        await axios.post('http://localhost:5139/api/Candidate', profileData, getAxiosConfig());
+        await candidateService.createProfile(profileData);
         alert("🎉 Profile created successfully!");
       }
       onSave(); 
@@ -178,8 +160,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
       return;
     }
     try {
-      const currentUserId = existingProfile ? existingProfile.userId : Number(userId || 3);
-      await candidateService.uploadResume(file, isPrimary, currentUserId);
+      await candidateService.uploadResume(file, isPrimary);
       setFile(null);
       setIsPrimary(false);
       const fileInput = document.querySelector('input[type="file"]');
@@ -219,7 +200,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
         startDate: exp.startDate ? new Date(exp.startDate).toISOString() : new Date().toISOString(), 
         endDate: exp.endDate && !exp.isCurrent ? new Date(exp.endDate).toISOString() : null 
       };
-      await axios.post('http://localhost:5139/api/Candidate/experience', payload, getAxiosConfig());
+      await candidateService.addExperience(payload);
       setExp({ companyName: '', jobTitle: '', location: '', description: '', startDate: '', endDate: '', isCurrent: false, employmentType: 'Full-Time' });
       loadProfileSubSections();
       alert("Experience added successfully!");
@@ -231,7 +212,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
 
   const handleDeleteExperience = async (id) => {
     try {
-      await axios.delete(`http://localhost:5139/api/Candidate/experience/${id}`, getAxiosConfig());
+      await candidateService.deleteExperience(id);
       loadProfileSubSections();
     } catch (err) {
       console.error(err);
@@ -253,7 +234,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
         grade: edu.grade || "",
         description: "", certificateUrl: "", city: "", country: "", educationLevel: "", gpa: 0, percentage: 0
       };
-      await axios.post('http://localhost:5139/api/Candidate/education', payload, getAxiosConfig());
+      await candidateService.addEducation(payload);
       setEdu({ institute: '', qualification: '', fieldOfStudy: '', startDate: '', endDate: '', isCurrent: false, grade: '' });
       loadProfileSubSections();
       alert("Education added successfully!");
@@ -265,7 +246,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
 
   const handleDeleteEducation = async (id) => {
     try {
-      await axios.delete(`http://localhost:5139/api/Candidate/education/${id}`, getAxiosConfig());
+      await candidateService.deleteEducation(id);
       loadProfileSubSections();
     } catch (err) {
       console.error(err);
@@ -436,7 +417,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
             <ul className="section-list">
               {resumesList.map(item => (
                 <li key={item.id} className="section-item">
-                  <a href={`http://localhost:5139${item.filePath}`} target="_blank" rel="noreferrer" className="resume-link">
+                  <a href={toPublicFileUrl(item.filePath)} target="_blank" rel="noreferrer" className="resume-link">
                     📁 {item.fileName} {item.isPrimary && <span className="badge-primary">(Primary)</span>}
                   </a>
                   <button type="button" onClick={() => handleDeleteResume(item.id)} className="btn-delete-icon">❌ Delete</button>

@@ -1,23 +1,21 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import candidateService from '../../api/candidateService';
+import candidateService, { toPublicFileUrl } from '../../api/candidateService';
 import './Profile.css';
 
-const ResumeManager = ({ userId }) => {
+const ResumeManager = () => {
     const [file, setFile] = useState(null);
     const [isPrimary, setIsPrimary] = useState(false);
     const [resumesList, setResumesList] = useState([]);
 
     // 💡 Fix: getProfile එකට userId එක pass කිරීම සහ රී-රෙන්ඩර් වීම් වැළැක්වීමට useCallback භාවිතය
-    const loadResumes = useCallback(() => {
-        if (!userId) return;
-        candidateService.getProfile(userId)
-            .then(res => {
-                setResumesList(res.resumes || []);
-            })
-            .catch(err => {
-                console.error("Error loading profile resumes:", err);
-            });
-    }, [userId]);
+    const loadResumes = useCallback(async () => {
+        try {
+            const data = await candidateService.getResumes();
+            setResumesList(data || []);
+        } catch (err) {
+            console.error("Error loading resumes:", err.response?.data || err.message);
+        }
+    }, []);
 
     useEffect(() => { 
         loadResumes(); 
@@ -78,12 +76,19 @@ const ResumeManager = ({ userId }) => {
                 ) : (
                     resumesList.map(item => (
                         <li key={item.id} className="section-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px', borderBottom: '1px solid #e5e7eb' }}>
-                            <a href={`http://localhost:5139${item.filePath}`} target="_blank" rel="noreferrer" style={{ color: '#0284c7', textDecoration: 'none' }}>
+                            <a href={toPublicFileUrl(item.filePath)} target="_blank" rel="noreferrer" style={{ color: '#0284c7', textDecoration: 'none' }}>
                                 {item.fileName} {item.isPrimary && <strong style={{ color: '#10b981', marginLeft: '5px' }}>(Primary)</strong>}
                             </a>
-                            <button onClick={() => handleDelete(item.id)} className="btn-delete" style={{ cursor: 'pointer' }}>
-                                ❌ Delete
-                            </button>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                                {!item.isPrimary && (
+                                    <button onClick={async () => { await candidateService.setPrimaryResume(item.id); loadResumes(); }} className="btn-secondary">
+                                        Set Primary
+                                    </button>
+                                )}
+                                <button onClick={() => handleDelete(item.id)} className="btn-delete" style={{ cursor: 'pointer' }}>
+                                    ❌ Delete
+                                </button>
+                            </div>
                         </li>
                     ))
                 )}
