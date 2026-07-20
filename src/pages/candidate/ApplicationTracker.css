@@ -1,0 +1,26 @@
+.tracker-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+.tracker-table th, .tracker-table td {
+    border: 1px solid #e2e8f0;
+    padding: 12px;
+    text-align: left;
+}
+
+.tracker-table th {
+    background-color: #f8f9fa;
+    color: #475569;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-badge.pending { background-color: #fef08a; color: #a16207; }
+.status-badge.reviewed { background-color: #bfdbfe; color: #1e40af; }
