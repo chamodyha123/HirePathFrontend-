@@ -22,20 +22,34 @@ function VerifyEmail() {
         setMessage("");
 
         try {
-            const res = await api.post("/Auth/verify-email", form);
-            localStorage.setItem("token", res.data.token);
-            localStorage.setItem("user", JSON.stringify(res.data));
-            localStorage.removeItem("verifyEmail");
+            // ✅ Use /api/Auth/verify-email
+            const res = await api.post("/api/Auth/verify-email", form);
+            
+            console.log("Verify response:", res.data);
 
-            setType("success");
-            setMessage("Email verified successfully.");
+            if (res.data.isSuccess) {
+                localStorage.setItem("token", res.data.token);
+                localStorage.setItem("user", JSON.stringify(res.data));
+                localStorage.removeItem("verifyEmail");
 
-            setTimeout(() => {
-                window.location.href = "/candidate-dashboard";
-            }, 1000);
+                setType("success");
+                setMessage("Email verified successfully.");
+
+                setTimeout(() => {
+                    window.location.href = "/candidate-dashboard";
+                }, 2000);
+            } else {
+                setType("error");
+                setMessage(res.data.message || "OTP verification failed.");
+            }
         } catch (err) {
+            console.error("Verification error:", err);
             setType("error");
-            setMessage(err.response?.data?.message || "OTP verification failed.");
+            setMessage(
+                err.response?.data?.message ||
+                err.response?.data?.title ||
+                "OTP verification failed. Please try again."
+            );
         } finally {
             setLoading(false);
         }
@@ -43,44 +57,82 @@ function VerifyEmail() {
 
     const resend = async () => {
         try {
-            await api.post("/Auth/resend-email-otp", { email: form.email });
+            // ✅ Use /api/Auth/resend-email-otp
+            await api.post("/api/Auth/resend-email-otp", { email: form.email });
             setType("success");
-            setMessage("OTP resent successfully.");
-        } catch {
+            setMessage("OTP resent successfully. Please check your email.");
+        } catch (err) {
+            console.error("Resend error:", err);
             setType("error");
-            setMessage("Failed to resend OTP.");
+            setMessage(
+                err.response?.data?.message ||
+                "Failed to resend OTP. Please try again."
+            );
         }
     };
 
     return (
         <div className="auth-page">
             <div className="auth-card">
-                <div className="auth-badge">AI Recruitment Platform</div>
-                <h1>Verify Email</h1>
-                <p>Enter the OTP sent to your email</p>
+                <div className="auth-badge">
+                    AI Recruitment Platform
+                </div>
 
-                {message && <div className={`message ${type}`}>{message}</div>}
+                <h1>Verify Email</h1>
+                <p>
+                    Enter the 6-digit OTP sent to<br />
+                    <strong>{form.email}</strong>
+                </p>
+
+                {message && (
+                    <div className={`message ${type}`}>
+                        {message}
+                    </div>
+                )}
 
                 <form onSubmit={submit}>
                     <div className="form-group">
                         <label>Email</label>
-                        <input name="email" value={form.email} onChange={change} required />
+                        <input
+                            name="email"
+                            value={form.email}
+                            onChange={change}
+                            required
+                            readOnly
+                        />
                     </div>
 
                     <div className="form-group">
                         <label>OTP Code</label>
-                        <input name="otp" value={form.otp} onChange={change} maxLength="6" required />
+                        <input
+                            name="otp"
+                            value={form.otp}
+                            onChange={change}
+                            placeholder="Enter 6-digit code"
+                            maxLength="6"
+                            required
+                        />
                     </div>
 
-                    <button className="auth-btn" disabled={loading}>
-                        {loading ? "Verifying..." : "Verify"}
+                    <button
+                        className="auth-btn"
+                        disabled={loading}
+                    >
+                        {loading ? "Verifying..." : "Verify Email"}
                     </button>
                 </form>
 
                 <div className="auth-links">
-                    <button className="auth-btn" type="button" onClick={resend}>
+                    <button
+                        className="link-btn"
+                        type="button"
+                        onClick={resend}
+                        disabled={loading}
+                    >
                         Resend OTP
                     </button>
+                    <br />
+                    <a href="/register">Go back to registration</a>
                 </div>
             </div>
         </div>
