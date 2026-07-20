@@ -4,12 +4,36 @@ import RecruiterSidebar from './RecruiterSidebar';
 const CandidateTracker = () => {
   const columns = ['Screening', 'Interview', 'Offered'];
 
-  // 1. Mock Data including AI Scores, Skills and Email info for Lecturer's requirements
+  // 1. Mock Data containing CV metadata and details for Review Option
   const [candidates, setCandidates] = useState([
-    { id: 1, name: 'Kasun Perera', role: 'React Developer', stage: 'Screening', aiScore: 92, skills: 'React, Node, AWS', email: 'kasun@email.com', matchReason: 'Excellent cloud and frontend experience.' },
-    { id: 2, name: 'Nimal Silva', role: 'UI/UX Designer', stage: 'Interview', aiScore: 78, skills: 'Figma, Tailwind, Adobe', email: 'nimal@email.com', matchReason: 'Strong portfolio, lacks active framework skills.' },
-    { id: 3, name: 'Dilini Fernando', role: 'QA Engineer', stage: 'Offered', aiScore: 88, skills: 'Selenium, Jira, Python', email: 'dilini@email.com', matchReason: 'Great automation background.' },
-    { id: 4, name: 'Amara Simons', role: 'Product Manager', stage: 'Screening', aiScore: 65, skills: 'Agile, Scrum, SQL', email: 'amara@email.com', matchReason: 'Good management but weak tech stack score.' }
+    { 
+      id: 1, name: 'Kasun Perera', role: 'React Developer', stage: 'Screening', aiScore: 92, 
+      skills: 'React, Node, AWS', email: 'kasun@email.com', matchReason: 'Excellent cloud and frontend experience.',
+      experience: '3+ Years as Frontend Engineer at TechCorp. Built scalable micro-frontends.',
+      education: 'BSc (Hons) in Software Engineering - IIT',
+      cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' 
+    },
+    { 
+      id: 2, name: 'Nimal Silva', role: 'UI/UX Designer', stage: 'Interview', aiScore: 78, 
+      skills: 'Figma, Tailwind, Adobe', email: 'nimal@email.com', matchReason: 'Strong portfolio, lacks active framework skills.',
+      experience: '2 Years Creative Designer at StudioX. Designed mobile apps with 50k+ downloads.',
+      education: 'Diploma in Graphic & UI Design - NIBM',
+      cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' 
+    },
+    { 
+      id: 3, name: 'Dilini Fernando', role: 'QA Engineer', stage: 'Offered', aiScore: 88, 
+      skills: 'Selenium, Jira, Python', email: 'dilini@email.com', matchReason: 'Great automation background.',
+      experience: '4 Years QA Lead at GlobalSoft. Specialized in automation and performance testing.',
+      education: 'BSc in Computer Science - University of Colombo',
+      cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' 
+    },
+    { 
+      id: 4, name: 'Amara Simons', role: 'Product Manager', stage: 'Screening', aiScore: 65, 
+      skills: 'Agile, Scrum, SQL', email: 'amara@email.com', matchReason: 'Good management but weak tech stack score.',
+      experience: '1.5 Years Associate PM. Managed cross-functional agile engineering teams.',
+      education: 'MBA in IT Management - University of Moratuwa',
+      cvUrl: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf' 
+    }
   ]);
 
   // Search & Filtering States
@@ -21,6 +45,7 @@ const CandidateTracker = () => {
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+  const [isCvModalOpen, setIsCvModalOpen] = useState(false); // New CV Review Modal State
   
   // Form States
   const [interviewDate, setInterviewDate] = useState('');
@@ -41,14 +66,14 @@ const CandidateTracker = () => {
     }));
   };
 
-  // 2. Candidate Search and Filtering Logic
+  // Candidate Search and Filtering Logic
   const filteredCandidates = candidates.filter(c => {
     const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) || c.role.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesSkill = c.skills.toLowerCase().includes(skillFilter.toLowerCase());
     return matchesSearch && matchesSkill;
   });
 
-  // 3. AI-Powered Ranking Logic
+  // AI-Powered Ranking Logic
   const displayCandidates = sortByAi 
     ? [...filteredCandidates].sort((a, b) => b.aiScore - a.aiScore)
     : filteredCandidates;
@@ -133,7 +158,17 @@ const CandidateTracker = () => {
                       <div style={{ color: '#4b5563', fontSize: '13px', fontWeight: '500' }}>{candidate.role}</div>
                       <div style={{ color: '#9ca3af', fontSize: '11px', margin: '4px 0 10px 0' }}>Tags: {candidate.skills}</div>
 
-                      {/* Lecturer Actions Point: Review, Email, Schedule */}
+                      {/* --- CV REVIEW OPTION LINK / BUTTON --- */}
+                      <div style={{ marginBottom: '12px' }}>
+                        <button
+                          onClick={() => { setSelectedCandidate(candidate); setIsCvModalOpen(true); }}
+                          style={{ width: '100%', background: 'rgba(79, 70, 229, 0.05)', border: '1px dashed #4f46e5', color: '#4f46e5', fontSize: '12px', padding: '6px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+                        >
+                          📄 Review Application & CV
+                        </button>
+                      </div>
+
+                      {/* Lecturer Actions Point: Email, Schedule */}
                       <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                         <button 
                           onClick={() => { setSelectedCandidate(candidate); setIsEmailModalOpen(true); }}
@@ -166,6 +201,83 @@ const CandidateTracker = () => {
           })}
         </div>
       </div>
+
+      {/* --- NEW: CV REVIEW MODAL --- */}
+      {isCvModalOpen && selectedCandidate && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, backdropFilter: 'blur(4px)' }}>
+          <div style={{ backgroundColor: '#fff', padding: '28px', borderRadius: '16px', width: '850px', maxWidth: '90%', height: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)' }}>
+            
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: '16px', marginBottom: '16px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#111827' }}>Application Review: {selectedCandidate.name}</h3>
+                <p style={{ margin: '4px 0 0 0', color: '#6b7280', fontSize: '14px' }}>{selectedCandidate.role} • <span style={{ color: '#4f46e5', fontWeight: '600' }}>{selectedCandidate.stage} Stage</span></p>
+              </div>
+              <button onClick={() => setIsCvModalOpen(false)} style={{ background: '#f3f4f6', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', fontWeight: 'bold', color: '#4b5563' }}>✕</button>
+            </div>
+
+            <div style={{ flex: 1, display: 'flex', gap: '20px', overflow: 'hidden' }}>
+              {/* Left Side: Candidate Profiling Details */}
+              <div style={{ flex: 1, overflowY: 'auto', paddingRight: '10px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#374151', fontWeight: '600' }}>✨ AI Fitment Summary ({selectedCandidate.aiScore}%)</h4>
+                  <div style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0', padding: '12px', borderRadius: '8px', fontSize: '13px', color: '#166534', lineHeight: '1.5' }}>
+                    {selectedCandidate.matchReason}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#374151', fontWeight: '600' }}>💼 Professional Experience</h4>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#4b5563', backgroundColor: '#f9fafb', padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb', lineHeight: '1.5' }}>
+                    {selectedCandidate.experience}
+                  </p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#374151', fontWeight: '600' }}>🎓 Education</h4>
+                  <p style={{ margin: 0, fontSize: '13px', color: '#4b5563', backgroundColor: '#f9fafb', padding: '12px', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
+                    {selectedCandidate.education}
+                  </p>
+                </div>
+
+                <div>
+                  <h4 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#374151', fontWeight: '600' }}>🛠️ Core Stack / Skills</h4>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {selectedCandidate.skills.split(', ').map(skill => (
+                      <span key={skill} style={{ backgroundColor: '#eff6ff', color: '#1e40af', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: '500' }}>{skill}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Side: Embedded Live Resume Preview (PDF iframe) */}
+              <div style={{ flex: 1.2, border: '1px solid #e5e7eb', borderRadius: '12px', overflow: 'hidden', background: '#f3f4f6', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ padding: '10px 14px', background: '#fff', borderBottom: '1px solid #e5e7eb', fontSize: '13px', fontWeight: '600', color: '#374151', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>📄 Original Resume Preview</span>
+                  <a href={selectedCandidate.cvUrl} target="_blank" rel="noreferrer" style={{ color: '#2563eb', textDecoration: 'none', fontSize: '12px' }}>Open in New Tab ↗</a>
+                </div>
+                <iframe 
+                  src={`${selectedCandidate.cvUrl}#toolbar=0`} 
+                  title="CV Preview" 
+                  width="100%" 
+                  height="100%" 
+                  style={{ border: 'none' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', borderTop: '1px solid #e5e7eb', paddingTop: '16px', marginTop: '16px' }}>
+              <button onClick={() => setIsCvModalOpen(false)} style={{ padding: '10px 18px', background: '#e5e7eb', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '14px' }}>Close Review</button>
+              <button 
+                onClick={() => { setIsCvModalOpen(false); setIsScheduleModalOpen(true); }} 
+                style={{ padding: '10px 18px', background: '#6d28d9', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '14px' }}
+              >
+                📅 Move to Interview Slot
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* --- INTERVIEW SCHEDULER MODAL --- */}
       {isScheduleModalOpen && (

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import RecruiterSidebar from './RecruiterSidebar';
 
-const API_BASE_URL = 'https://localhost:7253/api/Recruiter';
+const API_BASE_URL = 'http://localhost:5139/api/Recruiter';
 const AUTH_TOKEN = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZW1haWwiOiJqYW5lLmRvZUBoaXJlcGF0aC5jb20iLCJ1bmlxdWVfbmFtZSI6ImphbmVkb2VfcmVjcnVpdGVyIiwiZnVsbE5hbWUiOiJKYW5lIERvZSIsImp0aSI6IjgwMDY3NThhLTU3MWEtNDZlMS1iZjA1LWExZWEwNDViNjliMCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlJlY3J1aXRlciIsImV4cCI6MTc4MzY5OTAxOSwiaXNzIjoiSGlyZVBhdGhBUEkiLCJhdWQiOiJIaXJlUGF0aENsaWVudCJ9.9WWeLEmpI13gs54QZt0SXJbRhu0Je4-4ppz0bTk6qgY';
 
 const JobManagement = () => {
@@ -18,6 +18,7 @@ const JobManagement = () => {
     title: '',
     companyName: '',
     departmentName: '',
+    skills: '', 
     status: 'Active'
   });
 
@@ -41,10 +42,8 @@ const JobManagement = () => {
     return [];
   };
 
-  // ⚡ 1. READ: Jobs ලිස්ට් එක හරියාකාරව සර්වර් එකෙන් ලබා ගැනීම
   const fetchJobs = async () => {
     try {
-      // Swagger එකට අනුව නිවැරදි Search Endpoint එක භාවිතා කර ඇත (Query parameters හිස්ව යවයි)
       const res = await fetch(`${API_BASE_URL}/jobs/search`, {
         method: 'GET', 
         headers: { 
@@ -94,11 +93,10 @@ const JobManagement = () => {
     }
   };
 
-  // ⚡ 2. CREATE & UPDATE: නව ජොබ් එකක් ඇතුලත් කිරීම හෝ සංස්කරණය
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!jobForm.title || !jobForm.companyName || !jobForm.departmentName) {
-      alert("Please fill all required fields!");
+    if (!jobForm.title || !jobForm.companyName || !jobForm.departmentName || !jobForm.skills) {
+      alert("Please fill all required fields including skills!");
       return;
     }
 
@@ -144,7 +142,12 @@ const JobManagement = () => {
         }
       }
 
-      // Swagger Schema එකට 100% ක්ම සමාන කල Payload එක
+      // Splitting skills from input by commas and cleaning them up
+      const skillsArray = jobForm.skills
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s !== "");
+
       const payload = {
         title: jobForm.title,
         description: "Job dynamic entry via portal.",
@@ -157,7 +160,7 @@ const JobManagement = () => {
         applicationDeadline: "2026-12-31T23:59:59.000Z",
         companyId: Number(companyId),
         departmentId: Number(departmentId),
-        skills: ["React", ".NET Core"]
+        skills: skillsArray 
       };
 
       const url = isEditing ? `${API_BASE_URL}/jobs/${currentJobId}` : `${API_BASE_URL}/jobs`;
@@ -171,31 +174,64 @@ const JobManagement = () => {
 
       if (res.ok) {
         alert(isEditing ? "Job updated successfully!" : "Job posted successfully!");
-        closeModal();
-        await loadAllData(); 
+        
+        if (isEditing) {
+          // ⚡ [CRITICAL FIX] Force React to re-render using Deep Cloning State Injection
+          setJobs(prevJobs => {
+            const nextJobs = prevJobs.map(job => {
+              if (job.id === currentJobId) {
+                return {
+                  ...job,
+                  title: jobForm.title,
+                  companyName: targetCompanyName,
+                  company: { ...job.company, name: targetCompanyName },
+                  departmentName: targetDeptName,
+                  department: { ...job.department, name: targetDeptName },
+                  skills: [...skillsArray], // Providing a new array reference to guarantee a re-render
+                  status: jobForm.status
+                };
+              }
+              return job;
+            });
+            return [...nextJobs]; // Making the outer array reference completely new as well
+          });
+        } else {
+          // Fetch the entire list only if a new job is added
+          await loadAllData();
+        }
+
       } else {
         const errData = await res.text();
-        alert(`Server Error: ${errData}`);
+        alert(`Server Error: Backend failed to save data. \nDetails: ${errData}`);
       }
     } catch (err) {
       console.error("Error saving job:", err);
-      alert("Something went wrong while processing.");
+      alert("Network error or Backend is offline.");
+    } finally {
+      closeModal();
     }
   };
 
   const handleEditClick = (job) => {
     setIsEditing(true);
     setCurrentJobId(job.id);
+    
+    let loadedSkills = '';
+    if (job.skills) {
+      const parsedSkills = extractArray(job.skills);
+      loadedSkills = parsedSkills.join(', ');
+    }
+
     setJobForm({
       title: job.title || '',
       companyName: job.companyName || job.company?.name || '',
       departmentName: job.departmentName || job.department?.name || '',
+      skills: loadedSkills,
       status: job.status || 'Active'
     });
     setIsModalOpen(true);
   };
 
-  // ⚡ 3. DELETE: ජොබ් එකක් ඉවත් කිරීම
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this job opportunity?")) {
       try {
@@ -219,7 +255,7 @@ const JobManagement = () => {
     setIsModalOpen(false);
     setIsEditing(false);
     setCurrentJobId(null);
-    setJobForm({ title: '', companyName: '', departmentName: '', status: 'Active' });
+    setJobForm({ title: '', companyName: '', departmentName: '', skills: '', status: 'Active' });
   };
 
   return (
@@ -249,6 +285,7 @@ const JobManagement = () => {
                 <th style={{ padding: '16px', fontWeight: '600', color: '#4b5563' }}>Position Title</th>
                 <th style={{ padding: '16px', fontWeight: '600', color: '#4b5563' }}>Company</th>
                 <th style={{ padding: '16px', fontWeight: '600', color: '#4b5563' }}>Department</th>
+                <th style={{ padding: '16px', fontWeight: '600', color: '#4b5563' }}>Required Skills</th>
                 <th style={{ padding: '16px', fontWeight: '600', color: '#4b5563' }}>Status</th>
                 <th style={{ padding: '16px', fontWeight: '600', color: '#4b5563', textAlign: 'right' }}>Actions</th>
               </tr>
@@ -259,6 +296,21 @@ const JobManagement = () => {
                   <td style={{ padding: '16px', color: '#111827', fontWeight: '500' }}>{job.title}</td>
                   <td style={{ padding: '16px', color: '#4b5563' }}>{job.companyName || job.company?.name || 'N/A'}</td>
                   <td style={{ padding: '16px', color: '#4b5563' }}>{job.departmentName || job.department?.name || 'N/A'}</td>
+                  
+                  <td style={{ padding: '16px' }}>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                      {job.skills && extractArray(job.skills).length > 0 ? (
+                        extractArray(job.skills).map((skill, sIdx) => (
+                          <span key={sIdx} style={{ backgroundColor: '#eff6ff', color: '#1e40af', padding: '3px 8px', borderRadius: '6px', fontSize: '12px', fontWeight: '500' }}>
+                            {skill}
+                          </span>
+                        ))
+                      ) : (
+                        <span style={{ color: '#9ca3af', fontSize: '12px', fontStyle: 'italic' }}>None Specified</span>
+                      )}
+                    </div>
+                  </td>
+
                   <td style={{ padding: '16px' }}>
                     <span style={{ 
                       color: job.status === 'Closed' ? '#981b1b' : '#065f46',
@@ -272,11 +324,6 @@ const JobManagement = () => {
                   </td>
                 </tr>
               ))}
-              {jobs.length === 0 && (
-                <tr>
-                  <td colSpan="5" style={{ textAlign: 'center', padding: '30px', color: '#9ca3af' }}>No jobs found. Click "+ Post a Job" to add one!</td>
-                </tr>
-              )}
             </tbody>
           </table>
         )}
@@ -295,7 +342,6 @@ const JobManagement = () => {
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Job Title *</label>
                 <input 
                   type="text" 
-                  placeholder="e.g., Senior C# Developer" 
                   value={jobForm.title}
                   onChange={(e) => setJobForm({...jobForm, title: e.target.value})}
                   style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
@@ -307,7 +353,6 @@ const JobManagement = () => {
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Company Name *</label>
                 <input 
                   type="text"
-                  placeholder="Type company name..." 
                   value={jobForm.companyName}
                   onChange={(e) => setJobForm({...jobForm, companyName: e.target.value})}
                   style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
@@ -319,9 +364,19 @@ const JobManagement = () => {
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Department Name *</label>
                 <input 
                   type="text"
-                  placeholder="Type department name..." 
                   value={jobForm.departmentName}
                   onChange={(e) => setJobForm({...jobForm, departmentName: e.target.value})}
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '5px', fontWeight: '500' }}>Required Skills *</label>
+                <input 
+                  type="text"
+                  value={jobForm.skills}
+                  onChange={(e) => setJobForm({...jobForm, skills: e.target.value})}
                   style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #d1d5db', boxSizing: 'border-box' }}
                   required
                 />
