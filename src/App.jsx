@@ -27,6 +27,7 @@ import CompanyAdminLayout from "./layouts/CompanyAdminLayout";
 import CompanyAdminDashboard from "./pages/company-admin/CompanyAdminDashboard";
 import CompanyProfile from "./pages/company-admin/CompanyProfile";
 import RecruiterManagement from "./pages/company-admin/RecruiterManagement";
+import CompanyJobs from "./pages/company-admin/CompanyJobs";
 
 const AdminGuard = ({ children }) => <ProtectedRoute roles={["PlatformAdmin", "SuperAdmin", "Admin"]}>{children}</ProtectedRoute>;
 const CompanyAdminGuard = ({ children }) => <ProtectedRoute roles={["CompanyAdmin"]}>{children}</ProtectedRoute>;
@@ -47,15 +48,16 @@ function App() {
     <Route path="/candidate/resumes" element={<ProtectedRoute roles={["Candidate"]}><ResumeManager /></ProtectedRoute>} />
     <Route path="/candidate/skills" element={<ProtectedRoute roles={["Candidate"]}><SkillsSection /></ProtectedRoute>} />
 
-    <Route path="/recruiter-dashboard" element={<ProtectedRoute roles={["Recruiter", "CompanyAdmin"]}><RecruiterDashboard /></ProtectedRoute>} />
-    <Route path="/recruiter-dashboard/jobs" element={<ProtectedRoute roles={["Recruiter", "CompanyAdmin"]}><JobManagement /></ProtectedRoute>} />
-    <Route path="/recruiter-dashboard/candidates" element={<ProtectedRoute roles={["Recruiter", "CompanyAdmin"]}><CandidateTracker /></ProtectedRoute>} />
+    <Route path="/recruiter-dashboard" element={<ProtectedRoute roles={["Recruiter"]}><RecruiterDashboard /></ProtectedRoute>} />
+    <Route path="/recruiter-dashboard/jobs" element={<ProtectedRoute roles={["Recruiter"]}><JobManagement /></ProtectedRoute>} />
+    <Route path="/recruiter-dashboard/candidates" element={<ProtectedRoute roles={["Recruiter"]}><CandidateTracker /></ProtectedRoute>} />
     <Route path="/hiring-dashboard" element={<ProtectedRoute roles={["HiringManager"]}><HiringDashboard /></ProtectedRoute>} />
 
     <Route path="/company-admin" element={<CompanyAdminGuard><CompanyAdminLayout /></CompanyAdminGuard>}>
       <Route index element={<CompanyAdminDashboard />} />
       <Route path="hiring-managers" element={<HiringManagerManagement />} />
       <Route path="recruiters" element={<RecruiterManagement />} />
+      <Route path="jobs" element={<CompanyJobs />} />
       <Route path="company-profile" element={<CompanyProfile />} />
     </Route>
 
