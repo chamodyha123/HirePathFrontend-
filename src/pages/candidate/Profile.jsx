@@ -1,503 +1,856 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios'; 
+import axios from 'axios';
 import { ProfileForm } from './ProfileForm';
+import {
+  Box,
+  Container,
+  Paper,
+  Typography,
+  Button,
+  Avatar,
+  Chip,
+  Grid,
+  Card,
+  CardContent,
+  Divider,
+  Stack,
+  IconButton,
+  Tooltip,
+  LinearProgress,
+  Alert,
+  Snackbar,
+  Tab,
+  Tabs,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
+  Fade,
+  Zoom,
+  Grow,
+  useTheme,
+  useMediaQuery,
+  alpha,
+} from '@mui/material';
+import {
+  Edit,
+  LocationOn,
+  Work,
+  School,
+  LinkedIn,
+  GitHub,
+  Language,
+  Phone,
+  Person,
+  CalendarToday,
+  Description,
+  Star,
+  TrendingUp,
+  Verified,
+  Public,
+  Favorite,
+  Code,
+  Share,
+  Download,
+} from '@mui/icons-material';
+import { styled, keyframes } from '@mui/material/styles';
+
+// Animations
+const float = keyframes`
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+`;
+
+const pulse = keyframes`
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+`;
+
+// Styled Components
+const GradientBackground = styled(Box)(({ theme }) => ({
+  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+  minHeight: '100vh',
+  padding: theme.spacing(4),
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.03) 0%, transparent 50%)',
+    pointerEvents: 'none',
+  },
+}));
+
+const GlassCard = styled(Paper)(({ theme }) => ({
+  background: 'rgba(255, 255, 255, 0.8)',
+  backdropFilter: 'blur(20px)',
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  borderRadius: theme.spacing(3),
+  padding: theme.spacing(4),
+  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[8],
+    background: 'rgba(255, 255, 255, 0.9)',
+  },
+}));
+
+const ProfileAvatar = styled(Avatar)(({ theme }) => ({
+  width: 120,
+  height: 120,
+  fontSize: 48,
+  fontWeight: 700,
+  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.dark})`,
+  boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.3)}`,
+  transition: 'all 0.3s ease',
+  animation: `${float} 3s ease-in-out infinite`,
+  '&:hover': {
+    transform: 'scale(1.05) rotate(-5deg)',
+  },
+  [theme.breakpoints.down('sm')]: {
+    width: 80,
+    height: 80,
+    fontSize: 32,
+  },
+}));
+
+const GradientButton = styled(Button)(({ theme }) => ({
+  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+  color: 'white',
+  padding: '10px 30px',
+  borderRadius: '12px',
+  fontWeight: 600,
+  textTransform: 'none',
+  transition: 'all 0.3s ease',
+  boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.3)}`,
+  '&:hover': {
+    transform: 'translateY(-2px) scale(1.02)',
+    boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.4)}`,
+  },
+}));
+
+const StatCard = styled(Card)(({ theme }) => ({
+  background: 'white',
+  borderRadius: theme.spacing(2),
+  padding: theme.spacing(2),
+  transition: 'all 0.3s ease',
+  cursor: 'default',
+  border: '1px solid rgba(0,0,0,0.05)',
+  '&:hover': {
+    transform: 'translateY(-4px)',
+    boxShadow: theme.shadows[4],
+  },
+}));
+
+const SkillChip = styled(Chip)(({ theme, level }) => {
+  const baseStyles = {
+    padding: theme.spacing(1, 0.5),
+    fontWeight: 600,
+    transition: 'all 0.3s ease',
+  };
+  
+  if (level === 'Expert') {
+    return {
+      ...baseStyles,
+      background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)',
+      color: '#1e40af',
+      border: '2px solid #93c5fd',
+      '&:hover': {
+        transform: 'scale(1.05)',
+        boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+      },
+    };
+  } else if (level === 'Intermediate') {
+    return {
+      ...baseStyles,
+      background: 'linear-gradient(135deg, #d1fae5, #a7f3d0)',
+      color: '#065f46',
+      border: '2px solid #6ee7b7',
+      '&:hover': {
+        transform: 'scale(1.05)',
+        boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+      },
+    };
+  } else {
+    return {
+      ...baseStyles,
+      background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+      color: '#92400e',
+      border: '2px solid #fcd34d',
+      '&:hover': {
+        transform: 'scale(1.05)',
+        boxShadow: '0 4px 12px rgba(245, 158, 11, 0.3)',
+      },
+    };
+  }
+});
+
+const TimelineDot = styled(Box)(({ theme, color }) => ({
+  position: 'absolute',
+  left: 0,
+  top: 8,
+  width: 16,
+  height: 16,
+  borderRadius: '50%',
+  background: `linear-gradient(135deg, ${color || theme.palette.primary.main}, ${color || theme.palette.primary.dark})`,
+  border: '3px solid white',
+  boxShadow: `0 0 0 3px ${color || theme.palette.primary.main}`,
+  zIndex: 1,
+  transition: 'all 0.3s ease',
+  animation: `${pulse} 2s ease-in-out infinite`,
+}));
+
+const TimelineItem = styled(Box)(({ theme }) => ({
+  position: 'relative',
+  paddingLeft: theme.spacing(5),
+  paddingBottom: theme.spacing(4),
+  '&:not(:last-child)::before': {
+    content: '""',
+    position: 'absolute',
+    left: 7,
+    top: 24,
+    bottom: 0,
+    width: 2,
+    background: `linear-gradient(to bottom, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
+    opacity: 0.3,
+  },
+  '&:last-child': {
+    paddingBottom: 0,
+  },
+}));
+
+const GradientDivider = styled(Divider)(({ theme }) => ({
+  background: `linear-gradient(to right, transparent, ${theme.palette.primary.main}, transparent)`,
+  height: 2,
+  margin: theme.spacing(3, 0),
+}));
+
+const FloatingActionButton = styled(Button)(({ theme }) => ({
+  position: 'fixed',
+  bottom: theme.spacing(4),
+  right: theme.spacing(4),
+  borderRadius: '50%',
+  minWidth: 60,
+  height: 60,
+  background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+  color: 'white',
+  boxShadow: `0 8px 32px ${alpha(theme.palette.primary.main, 0.4)}`,
+  '&:hover': {
+    transform: 'scale(1.1)',
+    boxShadow: `0 12px 48px ${alpha(theme.palette.primary.main, 0.5)}`,
+  },
+}));
 
 function Profile() {
-    const [profile, setProfile] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [isEditing, setIsEditing] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
+  const [activeTab, setActiveTab] = useState(0);
+  const [hoveredCard, setHoveredCard] = useState(null);
 
-    const fetchProfileData = async (abortSignal) => {
-        try {
-            setLoading(true);
-            const token = localStorage.getItem("token");
+  const fetchProfileData = async (abortSignal) => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
 
-            if (!token) {
-                console.error("No token found!");
-                setLoading(false);
-                return;
-            }
+      if (!token) {
+        setSnackbar({
+          open: true,
+          message: 'No authentication token found!',
+          severity: 'error',
+        });
+        setLoading(false);
+        return;
+      }
 
-            const response = await axios.get('http://localhost:5139/api/Candidate', {
-                signal: abortSignal,
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'accept': '*/*'
-                }
-            });
+      const response = await axios.get('http://localhost:5139/api/Candidate', {
+        signal: abortSignal,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          accept: '*/*',
+        },
+      });
 
-            if (response.data) {
-                setProfile(response.data);
-                setIsEditing(false);
-            } else {
-                setProfile(null);
-                setIsEditing(true);
-            }
-        } catch (error) {
-            if (axios.isCancel(error)) {
-                console.log("Fetch aborted");
-                return;
-            }
-            console.error("Error fetching profile:", error);
-            setProfile(null);
-            setIsEditing(true);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    useEffect(() => {
-        const controller = new AbortController();
-        fetchProfileData(controller.signal);
-
-        return () => {
-            controller.abort();
-        };
-    }, []);
-
-    const getInitials = () => {
-        if (!profile) return "?";
-        const firstInitial = profile.firstName?.[0] || "";
-        const lastInitial = profile.lastName?.[0] || "";
-        return `${firstInitial}${lastInitial}`.toUpperCase() || "?";
-    };
-
-    const formatDate = (d) => {
-        if (!d) return "Present";
-        return new Date(d).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    };
-
-    const formatDateSimple = (dateString) => {
-        if (!dateString) return 'N/A';
-        return dateString.split('T')[0];
-    };
-
-    if (loading) return <div style={styles.loadingState}>⏳ Loading Profile Data...</div>;
-
-    return (
-        <div style={styles.pageBackground}>
-            {!profile || isEditing ? (
-                <ProfileForm
-                    userId={profile?.userId || 3}
-                    existingProfile={profile}
-                    onSave={() => {
-                        setIsEditing(false);
-                        fetchProfileData();
-                    }}
-                    onCancel={profile ? () => setIsEditing(false) : null}
-                />
-            ) : (
-                <div style={styles.mainContainer}>
-                    
-                    {/* Top Action Row */}
-                    <div style={styles.topActionBar}>
-                        <button onClick={() => setIsEditing(true)} style={styles.btnEditOutside}>
-                            ✏️ Edit Profile
-                        </button>
-                    </div>
-                    
-                    {/* 1. Main Header Card */}
-                    <div style={styles.card}>
-                        <div style={styles.headerFlex}>
-                            <div style={styles.avatarPlaceholder}>
-                                {getInitials()}
-                            </div>
-                            <div style={styles.userIntro}>
-                                <h2 style={styles.userName}>{profile.firstName} {profile.lastName}</h2>
-                                {profile.headline && <p style={styles.professionalHeadline}>{profile.headline}</p>}
-                                <p style={styles.locationText}> {profile.location || 'Location not specified'}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 2. Professional Summary */}
-                    {profile.summary && (
-                        <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>📝 Professional Summary</h3>
-                            <p style={styles.summaryContent}>{profile.summary}</p>
-                        </div>
-                    )}
-
-                    {/* 3. Personal & Work Details (Grid) */}
-                    <div style={styles.formGrid2}>
-                        <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>👤 Personal Details</h3>
-                            <table style={styles.infoTable}>
-                                <tbody>
-                                    <tr><td style={styles.tableLabel}>Birth Date:</td><td style={styles.tableValue}>{formatDateSimple(profile.dateOfBirth)}</td></tr>
-                                    <tr><td style={styles.tableLabel}>Gender:</td><td style={styles.tableValue}>{profile.gender || 'N/A'}</td></tr>
-                                    <tr><td style={styles.tableLabel}>Nationality:</td><td style={styles.tableValue}>{profile.nationality || 'N/A'}</td></tr>
-                                    <tr><td style={styles.tableLabel}>Marital Status:</td><td style={styles.tableValue}>{profile.maritalStatus || 'N/A'}</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>💼 Work & Contact</h3>
-                            <table style={styles.infoTable}>
-                                <tbody>
-                                    <tr><td style={styles.tableLabel}>Experience:</td><td style={styles.tableValue}>{profile.yearsOfExperience || 0} Years</td></tr>
-                                    <tr><td style={styles.tableLabel}>Work Mode:</td><td style={styles.tableValue}><span style={styles.badgeMode}>{profile.preferredWorkMode || 'N/A'}</span></td></tr>
-                                    <tr><td style={styles.tableLabel}>Languages:</td><td style={styles.tableValue}>{profile.languages || 'N/A'}</td></tr>
-                                    <tr><td style={styles.tableLabel}>Phone:</td><td style={styles.tableValue}>{profile.phoneNumber || 'N/A'}</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    {/* 4. Social Links */}
-                    <div style={styles.card}>
-                        <h3 style={styles.sectionTitle}>🔗 Links & Portfolios</h3>
-                        <div style={styles.linksContainer}>
-                            {profile.linkedInUrl && <a href={profile.linkedInUrl} target="_blank" rel="noreferrer" style={{...styles.linkItem, backgroundColor: '#0077b5'}}>LinkedIn</a>}
-                            {profile.gitHubUrl && <a href={profile.gitHubUrl} target="_blank" rel="noreferrer" style={{...styles.linkItem, backgroundColor: '#24292e'}}>GitHub</a>}
-                            {profile.portfolioUrl && <a href={profile.portfolioUrl} target="_blank" rel="noreferrer" style={{...styles.linkItem, backgroundColor: '#10b981'}}>Portfolio</a>}
-                            {!profile.linkedInUrl && !profile.gitHubUrl && !profile.portfolioUrl && <p style={styles.mutedText}>No links attached.</p>}
-                        </div>
-                    </div>
-
-                    {/* 5. Skills */}
-                    {profile.skills?.length > 0 && (
-                        <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>⚡ Skills</h3>
-                            <div style={styles.skillsContainer}>
-                                {profile.skills.map((s) => (
-                                    <div key={s.id} style={styles.skillBadge}>
-                                        <span style={styles.skillName}>{s.skillName}</span>
-                                        <span style={styles.skillLevel}>{s.skillLevel}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 6. Experience Timeline */}
-                    {profile.experiences?.length > 0 && (
-                        <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>💼 Work Experience</h3>
-                            <div>
-                                {profile.experiences.map((exp) => (
-                                    <div key={exp.id} style={styles.timelineItem}>
-                                        <div style={styles.timelineDot}></div>
-                                        <div style={styles.timelineContent}>
-                                            <h4 style={styles.timelineTitle}>{exp.jobTitle} <span style={styles.companyName}>at {exp.companyName}</span></h4>
-                                            <p style={styles.timelineMeta}>
-                                                📅 {formatDate(exp.startDate)} — {exp.isCurrent ? 'Present' : formatDate(exp.endDate)} | 📍 {exp.location || 'Remote'} ({exp.employmentType})
-                                            </p>
-                                            {exp.description && <p style={styles.timelineDesc}>{exp.description}</p>}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 7. Education Timeline */}
-                    {profile.educations?.length > 0 && (
-                        <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>🎓 Education</h3>
-                            <div>
-                                {profile.educations.map((edu) => (
-                                    <div key={edu.id} style={styles.timelineItem}>
-                                        <div style={{...styles.timelineDot, backgroundColor: '#10b981'}}></div>
-                                        <div style={styles.timelineContent}>
-                                            <h4 style={styles.timelineTitle}>{edu.qualification}</h4>
-                                            <p style={styles.educationSub}>{edu.institute} {edu.fieldOfStudy && `- ${edu.fieldOfStudy}`}</p>
-                                            <p style={styles.timelineMeta}>
-                                                📅 {formatDate(edu.startDate)} — {edu.isCurrent ? 'Present' : formatDate(edu.endDate)}
-                                                {edu.grade && <span style={styles.gradeBadge}>Grade: {edu.grade}</span>}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* 8. Resumes */}
-                    {profile.resumes?.length > 0 && (
-                        <div style={styles.card}>
-                            <h3 style={styles.sectionTitle}>📄 Documents & Resumes</h3>
-                            <ul style={styles.resumeList}>
-                                {profile.resumes.map((r) => (
-                                    <li key={r.id} style={styles.resumeItem}>
-                                        <a href={`http://localhost:5139${r.filePath}`} target="_blank" rel="noreferrer" style={styles.resumeLink}>
-                                            📄 {r.fileName} {r.isPrimary && <span style={styles.primaryDocBadge}>Primary</span>}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-
-                </div>
-            )}
-        </div>
-    );
-}
-
-const styles = {
-    pageBackground: {
-        backgroundColor: '#f8fafc',
-        minHeight: '100vh',
-        padding: '30px 20px',
-        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
-    },
-    mainContainer: {
-        width: '100%',
-        maxWidth: '850px',
-        margin: '0 auto',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '24px',
-        boxSizing: 'border-box'
-    },
-    loadingState: {
-        textAlign: 'center',
-        padding: '50px',
-        fontSize: '18px',
-        color: '#64748b'
-    },
-    topActionBar: {
-        display: 'flex',
-        justifyContent: 'flex-end',
-        width: '100%'
-    },
-    btnEditOutside: {
-        backgroundColor: '#ffffff',
-        border: '1px solid #cbd5e1',
-        padding: '10px 20px',
-        borderRadius: '8px',
-        fontSize: '15px',
-        fontWeight: '600',
-        color: '#334155',
-        cursor: 'pointer',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-        transition: 'all 0.2s'
-    },
-    card: {
-        backgroundColor: '#ffffff',
-        padding: '32px',
-        borderRadius: '16px',
-        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
-        width: '100%',
-        boxSizing: 'border-box',
-        border: '1px solid #f1f5f9'
-    },
-    headerFlex: {
-        display: 'flex',
-        gap: '24px',
-        alignItems: 'center',
-        flexWrap: 'wrap'
-    },
-    avatarPlaceholder: {
-        width: '90px',
-        height: '90px',
-        borderRadius: '50%',
-        backgroundColor: '#3b82f6',
-        color: '#ffffff',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '32px',
-        fontWeight: 'bold',
-        boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)'
-    },
-    userIntro: {
-        flex: '1',
-        minWidth: '250px'
-    },
-    userName: {
-        margin: '0 0 6px 0',
-        fontSize: '28px',
-        fontWeight: '700',
-        color: '#0f172a'
-    },
-    professionalHeadline: {
-        margin: '0 0 8px 0',
-        fontSize: '17px',
-        color: '#475569',
-        fontWeight: '500'
-    },
-    locationText: {
-        margin: '0',
-        fontSize: '15px',
-        color: '#64748b'
-    },
-    sectionTitle: {
-        margin: '0 0 18px 0',
-        fontSize: '19px',
-        fontWeight: '600',
-        color: '#1e293b',
-        borderBottom: '2px solid #f1f5f9',
-        paddingBottom: '10px'
-    },
-    summaryContent: {
-        fontSize: '16px',
-        lineHeight: '1.6',
-        color: '#334155',
-        margin: '0'
-    },
-    formGrid2: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
-        gap: '24px',
-        width: '100%'
-    },
-    infoTable: {
-        width: '100%',
-        borderCollapse: 'collapse',
-        fontSize: '16px'
-    },
-    tableLabel: {
-        padding: '10px 0',
-        color: '#64748b',
-        fontWeight: '500',
-        width: '40%'
-    },
-    tableValue: {
-        padding: '10px 0',
-        color: '#0f172a',
-        fontWeight: '600'
-    },
-    badgeMode: {
-        backgroundColor: '#eff6ff',
-        color: '#1d4ed8',
-        padding: '4px 10px',
-        borderRadius: '6px',
-        fontSize: '14px',
-        fontWeight: '600'
-    },
-    linksContainer: {
-        display: 'flex',
-        gap: '12px',
-        flexWrap: 'wrap'
-    },
-    linkItem: {
-        color: '#ffffff',
-        padding: '10px 20px',
-        borderRadius: '8px',
-        textDecoration: 'none',
-        fontSize: '15px',
-        fontWeight: '600',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-    },
-    mutedText: {
-        color: '#64748b',
-        margin: '0',
-        fontSize: '15px'
-    },
-    skillsContainer: {
-        display: 'flex',
-        gap: '12px',
-        flexWrap: 'wrap'
-    },
-    skillBadge: {
-        display: 'inline-flex',
-        alignItems: 'center',
-        backgroundColor: '#f1f5f9',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        border: '1px solid #e2e8f0'
-    },
-    skillName: {
-        padding: '8px 14px',
-        fontSize: '15px',
-        fontWeight: '600',
-        color: '#1e293b'
-    },
-    skillLevel: {
-        backgroundColor: '#cbd5e1',
-        padding: '8px 12px',
-        fontSize: '13px',
-        fontWeight: '700',
-        color: '#334155',
-        textTransform: 'uppercase'
-    },
-    timelineItem: {
-        position: 'relative',
-        paddingLeft: '30px',
-        marginBottom: '24px',
-    },
-    timelineDot: {
-        position: 'absolute',
-        left: '0',
-        top: '6px',
-        width: '12px',
-        height: '12px',
-        borderRadius: '50%',
-        backgroundColor: '#3b82f6',
-        border: '3px solid #ffffff',
-        boxShadow: '0 0 0 2px #3b82f6'
-    },
-    timelineContent: {
-        backgroundColor: '#f8fafc',
-        padding: '16px',
-        borderRadius: '10px',
-        border: '1px solid #e2e8f0'
-    },
-    timelineTitle: {
-        margin: '0 0 6px 0',
-        fontSize: '17px',
-        fontWeight: '700',
-        color: '#0f172a'
-    },
-    companyName: {
-        fontWeight: '500',
-        color: '#475569'
-    },
-    educationSub: {
-        margin: '0 0 6px 0',
-        fontSize: '15px',
-        color: '#475569',
-        fontWeight: '500'
-    },
-    timelineMeta: {
-        margin: '0 0 8px 0',
-        fontSize: '14px',
-        color: '#64748b',
-        fontWeight: '500'
-    },
-    timelineDesc: {
-        margin: '0',
-        fontSize: '15px',
-        lineHeight: '1.5',
-        color: '#334155'
-    },
-    gradeBadge: {
-        marginLeft: '10px',
-        backgroundColor: '#f0fdf4',
-        color: '#166534',
-        padding: '2px 8px',
-        borderRadius: '4px',
-        fontWeight: '600'
-    },
-    resumeList: {
-        listStyle: 'none',
-        padding: '0',
-        margin: '0'
-    },
-    resumeItem: {
-        marginBottom: '10px'
-    },
-    resumeLink: {
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '8px',
-        color: '#2563eb',
-        textDecoration: 'none',
-        fontSize: '16px',
-        fontWeight: '600'
-    },
-    primaryDocBadge: {
-        backgroundColor: '#fef3c7',
-        color: '#d97706',
-        padding: '2px 8px',
-        borderRadius: '4px',
-        fontSize: '12px',
-        fontWeight: '700',
-        marginLeft: '10px'
+      if (response.data) {
+        setProfile(response.data);
+        setIsEditing(false);
+      } else {
+        setProfile(null);
+        setIsEditing(true);
+      }
+    } catch (error) {
+      if (axios.isCancel(error)) {
+        console.log('Fetch aborted');
+        return;
+      }
+      console.error('Error fetching profile:', error);
+      setProfile(null);
+      setIsEditing(true);
+      setSnackbar({
+        open: true,
+        message: 'Failed to load profile data.',
+        severity: 'error',
+      });
+    } finally {
+      setLoading(false);
     }
-};
+  };
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchProfileData(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
+
+  const getInitials = () => {
+    if (!profile) return '?';
+    const firstInitial = profile.firstName?.[0] || '';
+    const lastInitial = profile.lastName?.[0] || '';
+    return `${firstInitial}${lastInitial}`.toUpperCase() || '?';
+  };
+
+  const formatDate = (d) => {
+    if (!d) return 'Present';
+    return new Date(d).toLocaleDateString('en-US', {
+      month: 'short',
+      year: 'numeric',
+    });
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#f8fafc' }}>
+        <Box sx={{ width: '100%', maxWidth: 400, textAlign: 'center' }}>
+          <Box sx={{ position: 'relative', display: 'inline-block' }}>
+            <Box sx={{ 
+              width: 80, 
+              height: 80, 
+              borderRadius: '50%',
+              background: `conic-gradient(from 0deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main}, ${theme.palette.primary.main})`,
+              animation: 'spin 1s linear infinite',
+              padding: 4,
+            }} />
+            <Box sx={{ 
+              position: 'absolute', 
+              top: 8, 
+              left: 8, 
+              right: 8, 
+              bottom: 8, 
+              borderRadius: '50%',
+              bgcolor: 'white',
+            }} />
+          </Box>
+          <Typography variant="h6" sx={{ mt: 3, fontWeight: 600, color: 'text.secondary' }}>
+            Loading Profile...
+          </Typography>
+          <LinearProgress sx={{ mt: 2, borderRadius: 2 }} />
+        </Box>
+      </Box>
+    );
+  }
+
+  return (
+    <GradientBackground>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+      >
+        <Alert 
+          severity={snackbar.severity} 
+          sx={{ 
+            width: '100%', 
+            borderRadius: 2,
+            boxShadow: theme.shadows[4],
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+
+      <Container maxWidth="lg">
+        {!profile || isEditing ? (
+          <ProfileForm
+            userId={profile?.userId || 3}
+            existingProfile={profile}
+            onSave={() => {
+              setIsEditing(false);
+              fetchProfileData();
+            }}
+            onCancel={profile ? () => setIsEditing(false) : null}
+          />
+        ) : (
+          <Fade in timeout={800}>
+            <Box>
+              {/* Header Section */}
+              <Grow in timeout={1000}>
+                <GlassCard sx={{ mb: 4, position: 'relative', overflow: 'hidden' }}>
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: -100,
+                      right: -100,
+                      width: 300,
+                      height: 300,
+                      borderRadius: '50%',
+                      background: `radial-gradient(circle, ${alpha(theme.palette.primary.main, 0.05)}, transparent)`,
+                    }}
+                  />
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'flex-start',
+                      flexWrap: 'wrap',
+                      gap: 3,
+                      position: 'relative',
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', gap: 4, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <ProfileAvatar>{getInitials()}</ProfileAvatar>
+                      <Box>
+                        <Typography variant="h4" fontWeight={700} color="text.primary" sx={{ mb: 0.5 }}>
+                          {profile.firstName} {profile.lastName}
+                        </Typography>
+                        {profile.headline && (
+                          <Typography variant="h6" color="text.secondary" sx={{ mb: 1, fontWeight: 500 }}>
+                            {profile.headline}
+                          </Typography>
+                        )}
+                        <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+                          <Chip
+                            icon={<LocationOn />}
+                            label={profile.location || 'Location not specified'}
+                            size="small"
+                            variant="outlined"
+                          />
+                          {profile.yearsOfExperience > 0 && (
+                            <Chip
+                              icon={<Work />}
+                              label={`${profile.yearsOfExperience} Years Experience`}
+                              size="small"
+                              color="primary"
+                            />
+                          )}
+                        </Stack>
+                      </Box>
+                    </Box>
+                    <Stack direction="row" spacing={2}>
+                      <Tooltip title="Share Profile">
+                        <IconButton sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1) }}>
+                          <Share />
+                        </IconButton>
+                      </Tooltip>
+                      <GradientButton
+                        startIcon={<Edit />}
+                        onClick={() => setIsEditing(true)}
+                      >
+                        Edit Profile
+                      </GradientButton>
+                    </Stack>
+                  </Box>
+                </GlassCard>
+              </Grow>
+
+              {/* Summary Section */}
+              {profile.summary && (
+                <Zoom in timeout={1200}>
+                  <GlassCard sx={{ mb: 4 }}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                      <Box component="span" sx={{ mr: 1, fontSize: 24 }}>📝</Box>
+                      Professional Summary
+                    </Typography>
+                    <GradientDivider />
+                    <Typography variant="body1" color="text.secondary" sx={{ lineHeight: 2, fontSize: '1.05rem' }}>
+                      {profile.summary}
+                    </Typography>
+                  </GlassCard>
+                </Zoom>
+              )}
+
+              {/* Quick Stats */}
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                {[
+                  { icon: Work, label: 'Experience', value: `${profile.yearsOfExperience || 0} Years`, color: '#3b82f6' },
+                  { icon: TrendingUp, label: 'Work Mode', value: profile.preferredWorkMode || 'N/A', color: '#10b981' },
+                  { icon: Language, label: 'Languages', value: profile.languages || 'N/A', color: '#8b5cf6' },
+                  { icon: Verified, label: 'Status', value: 'Active', color: '#f59e0b' },
+                ].map((stat, index) => (
+                  <Grid item xs={6} sm={3} key={index}>
+                    <Grow in timeout={1400 + index * 200}>
+                      <StatCard
+                        onMouseEnter={() => setHoveredCard(index)}
+                        onMouseLeave={() => setHoveredCard(null)}
+                        sx={{
+                          transform: hoveredCard === index ? 'translateY(-8px)' : 'none',
+                        }}
+                      >
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                          <Box sx={{ 
+                            p: 1, 
+                            borderRadius: 2, 
+                            bgcolor: alpha(stat.color, 0.1),
+                          }}>
+                            <stat.icon sx={{ color: stat.color }} />
+                          </Box>
+                          <Typography variant="caption" color="text.secondary" fontWeight={500}>
+                            {stat.label}
+                          </Typography>
+                        </Box>
+                        <Typography variant="h5" fontWeight={700}>
+                          {stat.value}
+                        </Typography>
+                      </StatCard>
+                    </Grow>
+                  </Grid>
+                ))}
+              </Grid>
+
+              {/* Personal & Links Grid */}
+              <Grid container spacing={3} sx={{ mb: 4 }}>
+                <Grid item xs={12} md={6}>
+                  <Zoom in timeout={1600}>
+                    <GlassCard>
+                      <Typography variant="h6" fontWeight={600} gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Person sx={{ mr: 1 }} />
+                        Personal Details
+                      </Typography>
+                      <GradientDivider />
+                      <Stack spacing={2}>
+                        {[
+                          { icon: CalendarToday, label: 'Date of Birth', value: profile.dateOfBirth ? new Date(profile.dateOfBirth).toLocaleDateString() : 'N/A' },
+                          { icon: Person, label: 'Gender', value: profile.gender || 'N/A' },
+                          { icon: Public, label: 'Nationality', value: profile.nationality || 'N/A' },
+                          { icon: Favorite, label: 'Marital Status', value: profile.maritalStatus || 'N/A' },
+                          { icon: Phone, label: 'Phone', value: profile.phoneNumber || 'N/A' },
+                        ].map((item, idx) => (
+                          <Box
+                            key={idx}
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              p: 1,
+                              borderRadius: 2,
+                              transition: 'all 0.2s',
+                              '&:hover': {
+                                bgcolor: alpha(theme.palette.primary.main, 0.05),
+                              },
+                            }}
+                          >
+                            <Typography color="text.secondary" sx={{ display: 'flex', alignItems: 'center' }}>
+                              <item.icon fontSize="small" sx={{ mr: 1, opacity: 0.6 }} />
+                              {item.label}
+                            </Typography>
+                            <Typography fontWeight={500}>{item.value}</Typography>
+                          </Box>
+                        ))}
+                      </Stack>
+                    </GlassCard>
+                  </Zoom>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Zoom in timeout={1800}>
+                    <GlassCard>
+                      <Typography variant="h6" fontWeight={600} gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Language sx={{ mr: 1 }} />
+                        Links & Portfolios
+                      </Typography>
+                      <GradientDivider />
+                      <Stack spacing={2}>
+                        {profile.linkedInUrl && (
+                          <Button
+                            href={profile.linkedInUrl}
+                            target="_blank"
+                            startIcon={<LinkedIn />}
+                            sx={{ 
+                              justifyContent: 'flex-start', 
+                              textTransform: 'none',
+                              borderRadius: 2,
+                              p: 1.5,
+                              '&:hover': { bgcolor: alpha('#0077b5', 0.1) },
+                            }}
+                            fullWidth
+                          >
+                            <Typography fontWeight={500}>LinkedIn Profile</Typography>
+                          </Button>
+                        )}
+                        {profile.gitHubUrl && (
+                          <Button
+                            href={profile.gitHubUrl}
+                            target="_blank"
+                            startIcon={<GitHub />}
+                            sx={{ 
+                              justifyContent: 'flex-start', 
+                              textTransform: 'none',
+                              borderRadius: 2,
+                              p: 1.5,
+                              '&:hover': { bgcolor: alpha('#24292e', 0.05) },
+                            }}
+                            fullWidth
+                          >
+                            <Typography fontWeight={500}>GitHub Profile</Typography>
+                          </Button>
+                        )}
+                        {profile.portfolioUrl && (
+                          <Button
+                            href={profile.portfolioUrl}
+                            target="_blank"
+                            startIcon={<Code />}
+                            sx={{ 
+                              justifyContent: 'flex-start', 
+                              textTransform: 'none',
+                              borderRadius: 2,
+                              p: 1.5,
+                              '&:hover': { bgcolor: alpha('#10b981', 0.1) },
+                            }}
+                            fullWidth
+                          >
+                            <Typography fontWeight={500}>Portfolio Website</Typography>
+                          </Button>
+                        )}
+                        {!profile.linkedInUrl && !profile.gitHubUrl && !profile.portfolioUrl && (
+                          <Typography color="text.secondary" align="center" sx={{ py: 2 }}>
+                            No links added yet
+                          </Typography>
+                        )}
+                      </Stack>
+                    </GlassCard>
+                  </Zoom>
+                </Grid>
+              </Grid>
+
+              {/* Skills Section */}
+              {profile.skills?.length > 0 && (
+                <Zoom in timeout={2000}>
+                  <GlassCard sx={{ mb: 4 }}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom sx={{ display: 'flex', alignItems: 'center' }}>
+                      <TrendingUp sx={{ mr: 1 }} />
+                      Skills & Expertise
+                    </Typography>
+                    <GradientDivider />
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
+                      {profile.skills.map((skill, index) => (
+                        <Grow in timeout={2200 + index * 100} key={skill.id}>
+                          <SkillChip
+                            label={`${skill.skillName} • ${skill.skillLevel}`}
+                            level={skill.skillLevel}
+                            variant="outlined"
+                            size="medium"
+                          />
+                        </Grow>
+                      ))}
+                    </Box>
+                  </GlassCard>
+                </Zoom>
+              )}
+
+              {/* Tabs Section */}
+              <GlassCard sx={{ mb: 4 }}>
+                <Tabs
+                  value={activeTab}
+                  onChange={handleTabChange}
+                  variant={isMobile ? 'scrollable' : 'standard'}
+                  scrollButtons={isMobile ? 'auto' : false}
+                  sx={{
+                    '& .MuiTab-root': {
+                      fontWeight: 600,
+                      textTransform: 'none',
+                      fontSize: '0.95rem',
+                      minHeight: 64,
+                    },
+                    '& .Mui-selected': {
+                      color: theme.palette.primary.main,
+                    },
+                    '& .MuiTabs-indicator': {
+                      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                      height: 3,
+                    },
+                  }}
+                >
+                  <Tab label="Experience" icon={<Work />} iconPosition="start" />
+                  <Tab label="Education" icon={<School />} iconPosition="start" />
+                  <Tab label="Resumes" icon={<Description />} iconPosition="start" />
+                </Tabs>
+                <Divider />
+
+                {/* Experience Tab */}
+                {activeTab === 0 && (
+                  <Box sx={{ pt: 3 }}>
+                    {profile.experiences?.length > 0 ? (
+                      profile.experiences.map((exp, index) => (
+                        <Fade in timeout={2400 + index * 200} key={exp.id}>
+                          <TimelineItem>
+                            <TimelineDot color="#3b82f6" />
+                            <GlassCard sx={{ p: 3, background: 'white' }}>
+                              <Typography variant="h6" fontWeight={700}>
+                                {exp.jobTitle}
+                              </Typography>
+                              <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1, fontWeight: 500 }}>
+                                {exp.companyName}
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
+                                <Chip
+                                  label={`${formatDate(exp.startDate)} — ${exp.isCurrent ? 'Present' : formatDate(exp.endDate)}`}
+                                  size="small"
+                                  variant="outlined"
+                                  icon={<CalendarToday />}
+                                />
+                                {exp.location && (
+                                  <Chip label={exp.location} size="small" variant="outlined" icon={<LocationOn />} />
+                                )}
+                                {exp.employmentType && (
+                                  <Chip label={exp.employmentType} size="small" variant="outlined" />
+                                )}
+                              </Box>
+                              {exp.description && (
+                                <Typography variant="body2" sx={{ mt: 2, lineHeight: 1.8 }}>
+                                  {exp.description}
+                                </Typography>
+                              )}
+                            </GlassCard>
+                          </TimelineItem>
+                        </Fade>
+                      ))
+                    ) : (
+                      <Typography color="text.secondary" align="center" sx={{ py: 6 }}>
+                        No experience added yet
+                      </Typography>
+                    )}
+                  </Box>
+                )}
+
+                {/* Education Tab */}
+                {activeTab === 1 && (
+                  <Box sx={{ pt: 3 }}>
+                    {profile.educations?.length > 0 ? (
+                      profile.educations.map((edu, index) => (
+                        <Fade in timeout={2400 + index * 200} key={edu.id}>
+                          <TimelineItem>
+                            <TimelineDot color="#10b981" />
+                            <GlassCard sx={{ p: 3, background: 'white' }}>
+                              <Typography variant="h6" fontWeight={700}>
+                                {edu.qualification}
+                              </Typography>
+                              <Typography variant="subtitle1" color="text.secondary" sx={{ mb: 1, fontWeight: 500 }}>
+                                {edu.institute}
+                              </Typography>
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 1 }}>
+                                <Chip
+                                  label={`${formatDate(edu.startDate)} — ${edu.isCurrent ? 'Present' : formatDate(edu.endDate)}`}
+                                  size="small"
+                                  variant="outlined"
+                                  icon={<CalendarToday />}
+                                />
+                                {edu.fieldOfStudy && (
+                                  <Chip label={edu.fieldOfStudy} size="small" variant="outlined" />
+                                )}
+                                {edu.grade && (
+                                  <Chip label={`Grade: ${edu.grade}`} size="small" color="success" />
+                                )}
+                              </Box>
+                            </GlassCard>
+                          </TimelineItem>
+                        </Fade>
+                      ))
+                    ) : (
+                      <Typography color="text.secondary" align="center" sx={{ py: 6 }}>
+                        No education added yet
+                      </Typography>
+                    )}
+                  </Box>
+                )}
+
+                {/* Resumes Tab */}
+                {activeTab === 2 && (
+                  <Box sx={{ pt: 3 }}>
+                    {profile.resumes?.length > 0 ? (
+                      <List>
+                        {profile.resumes.map((resume, index) => (
+                          <Fade in timeout={2400 + index * 200} key={resume.id}>
+                            <ListItem
+                              sx={{
+                                borderRadius: 2,
+                                mb: 1,
+                                transition: 'all 0.3s',
+                                '&:hover': {
+                                  bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                  transform: 'translateX(8px)',
+                                },
+                              }}
+                            >
+                              <ListItemIcon>
+                                <Description sx={{ color: theme.palette.primary.main }} />
+                              </ListItemIcon>
+                              <ListItemText
+                                primary={
+                                  <Typography component="span" fontWeight={600}>
+                                    {resume.fileName}
+                                    {resume.isPrimary && (
+                                      <Chip
+                                        label="Primary"
+                                        size="small"
+                                        color="primary"
+                                        icon={<Star sx={{ fontSize: 14 }} />}
+                                        sx={{ ml: 1 }}
+                                      />
+                                    )}
+                                  </Typography>
+                                }
+                              />
+                              <Button
+                                href={`http://localhost:5139${resume.filePath}`}
+                                target="_blank"
+                                variant="outlined"
+                                size="small"
+                                startIcon={<Download />}
+                                sx={{ borderRadius: 2, textTransform: 'none' }}
+                              >
+                                View
+                              </Button>
+                            </ListItem>
+                          </Fade>
+                        ))}
+                      </List>
+                    ) : (
+                      <Typography color="text.secondary" align="center" sx={{ py: 6 }}>
+                        No resumes uploaded yet
+                      </Typography>
+                    )}
+                  </Box>
+                )}
+              </GlassCard>
+            </Box>
+          </Fade>
+        )}
+      </Container>
+
+      {/* Floating Action Button */}
+      <FloatingActionButton
+        variant="contained"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      >
+        <Typography variant="h5">↑</Typography>
+      </FloatingActionButton>
+    </GradientBackground>
+  );
+}
 
 export default Profile;
