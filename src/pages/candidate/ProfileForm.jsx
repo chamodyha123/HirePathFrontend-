@@ -1,3 +1,4 @@
+// src/pages/candidate/ProfileForm.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import candidateService from '../../api/candidateService';
@@ -28,6 +29,7 @@ import {
   ListItem,
   ListItemText,
   Modal,
+  InputAdornment, // ← ADD THIS
 } from '@mui/material';
 import {
   Save,
@@ -633,6 +635,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
           </SectionHeader>
 
           <Grid container spacing={3}>
+            {/* First Name - FIXED: Removed InputProps */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
@@ -641,9 +644,10 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 value={formData.firstName}
                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                 placeholder="Enter first name"
-                InputProps={{ startAdornment: <Person color="action" sx={{ mr: 1 }} /> }}
               />
             </Grid>
+
+            {/* Last Name */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
@@ -654,6 +658,8 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 placeholder="Enter last name"
               />
             </Grid>
+
+            {/* Professional Headline */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -663,6 +669,8 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 placeholder="e.g. Full Stack Developer | React & Spring Boot"
               />
             </Grid>
+
+            {/* Professional Summary */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -674,6 +682,8 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 placeholder="Write a brief overview about your career, goals, and core technical skills..."
               />
             </Grid>
+
+            {/* Location */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
@@ -681,9 +691,10 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                 placeholder="e.g. Colombo, Sri Lanka"
-                InputProps={{ startAdornment: <LocationOn color="action" sx={{ mr: 1 }} /> }}
               />
             </Grid>
+
+            {/* Phone Number */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
@@ -691,9 +702,10 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 value={formData.phoneNumber}
                 onChange={(e) => setFormData({ ...formData, phoneNumber: e.target.value })}
                 placeholder="e.g. +947XXXXXXXX"
-                InputProps={{ startAdornment: <Phone color="action" sx={{ mr: 1 }} /> }}
               />
             </Grid>
+
+            {/* Date of Birth - FIXED: Removed InputLabelProps */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
@@ -701,9 +713,11 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 label="Date of Birth"
                 value={formData.dateOfBirth}
                 onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                InputLabelProps={{ shrink: true }}
+                slotProps={{ inputLabel: { shrink: true } }}
               />
             </Grid>
+
+            {/* Gender */}
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Gender</InputLabel>
@@ -718,6 +732,8 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 </Select>
               </FormControl>
             </Grid>
+
+            {/* Nationality */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
@@ -727,6 +743,8 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 placeholder="e.g. Sri Lankan"
               />
             </Grid>
+
+            {/* Marital Status */}
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Marital Status</InputLabel>
@@ -740,6 +758,8 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 </Select>
               </FormControl>
             </Grid>
+
+            {/* Preferred Work Mode */}
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Preferred Work Mode</InputLabel>
@@ -754,6 +774,8 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 </Select>
               </FormControl>
             </Grid>
+
+            {/* Languages */}
             <Grid item xs={12} md={6}>
               <TextField
                 fullWidth
@@ -761,9 +783,10 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 value={formData.languages}
                 onChange={(e) => setFormData({ ...formData, languages: e.target.value })}
                 placeholder="e.g. English, Sinhala, Tamil"
-                InputProps={{ startAdornment: <Language color="action" sx={{ mr: 1 }} /> }}
               />
             </Grid>
+
+            {/* LinkedIn URL */}
             <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
@@ -771,9 +794,10 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 value={formData.linkedInUrl}
                 onChange={(e) => setFormData({ ...formData, linkedInUrl: e.target.value })}
                 placeholder="https://linkedin.com/in/username"
-                InputProps={{ startAdornment: <LinkedIn color="action" sx={{ mr: 1 }} /> }}
               />
             </Grid>
+
+            {/* GitHub URL */}
             <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
@@ -781,9 +805,10 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 value={formData.gitHubUrl}
                 onChange={(e) => setFormData({ ...formData, gitHubUrl: e.target.value })}
                 placeholder="https://github.com/username"
-                InputProps={{ startAdornment: <GitHub color="action" sx={{ mr: 1 }} /> }}
               />
             </Grid>
+
+            {/* Portfolio URL */}
             <Grid item xs={12} md={4}>
               <TextField
                 fullWidth
@@ -793,6 +818,8 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 placeholder="https://username.github.io"
               />
             </Grid>
+
+            {/* Years of Experience */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -802,7 +829,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                 onChange={(e) =>
                   setFormData({ ...formData, yearsOfExperience: parseInt(e.target.value) || 0 })
                 }
-                InputProps={{ inputProps: { min: 0 } }}
+                slotProps={{ input: { inputProps: { min: 0 } } }}
               />
             </Grid>
           </Grid>
@@ -873,7 +900,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
               </Grid>
 
               <Box sx={{ mt: 3 }}>
-                <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                <Stack direction="row" spacing={1} flexWrap="wrap">
                   {skillsList.map((item) => (
                     <Chip
                       key={item.id}
@@ -1044,7 +1071,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                       label="Start Date"
                       value={exp.startDate}
                       onChange={(e) => setExp({ ...exp, startDate: e.target.value })}
-                      InputLabelProps={{ shrink: true }}
+                      slotProps={{ inputLabel: { shrink: true } }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -1055,7 +1082,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                       value={exp.endDate}
                       onChange={(e) => setExp({ ...exp, endDate: e.target.value })}
                       disabled={exp.isCurrent}
-                      InputLabelProps={{ shrink: true }}
+                      slotProps={{ inputLabel: { shrink: true } }}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -1175,7 +1202,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                       label="Start Date"
                       value={edu.startDate}
                       onChange={(e) => setEdu({ ...edu, startDate: e.target.value })}
-                      InputLabelProps={{ shrink: true }}
+                      slotProps={{ inputLabel: { shrink: true } }}
                     />
                   </Grid>
                   <Grid item xs={12} md={6}>
@@ -1186,7 +1213,7 @@ export const ProfileForm = ({ userId, existingProfile, onSave, onCancel }) => {
                       value={edu.endDate}
                       onChange={(e) => setEdu({ ...edu, endDate: e.target.value })}
                       disabled={edu.isCurrent}
-                      InputLabelProps={{ shrink: true }}
+                      slotProps={{ inputLabel: { shrink: true } }}
                     />
                   </Grid>
                   <Grid item xs={12}>

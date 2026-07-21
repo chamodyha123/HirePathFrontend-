@@ -15,7 +15,7 @@ export default function JobSearch({ userId }) {
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(null);
     const [showRecommendations, setShowRecommendations] = useState(false);
-    const { loading: aiLoading, results: recommendations, getRecommendations } = useAI();
+    const { loading: aiLoading, data: recommendations, getRecommendations } = useAI();
 
     const load = async () => {
         setLoading(true);
@@ -24,7 +24,7 @@ export default function JobSearch({ userId }) {
             const { data } = await api.get('/Jobs/active');
             setJobs(arr(data));
         } catch (e) {
-            setError(e.response?.data?.detail || e.response?.data?.message || e.response?.data?.title || 'Unable to load jobs.');
+            setError(e.response?.data?.detail || 'Unable to load jobs.');
         } finally {
             setLoading(false);
         }
@@ -32,13 +32,11 @@ export default function JobSearch({ userId }) {
 
     useEffect(() => {
         load();
-        if (userId) {
-            getRecommendations(userId, 10);
-        }
+        if (userId) getRecommendations(userId, 10);
     }, [userId]);
 
     const shown = useMemo(() => {
-        let filtered = jobs.filter(j => 
+        let filtered = jobs.filter(j =>
             `${j.title} ${j.description} ${j.company?.name || j.companyName || ''} ${j.location}`.toLowerCase().includes(q.toLowerCase())
         );
 
@@ -63,10 +61,14 @@ export default function JobSearch({ userId }) {
         setBusy(job.id);
         try {
             await applicationApi.apply(job.id, coverLetter || null, null);
-            alert('Application submitted successfully. Track it from Application Tracker.');
+            alert('Application submitted successfully!');
             await load();
         } catch (e) {
-            alert(e.response?.data?.message || e.response?.data || 'Unable to apply.');
+            if (e.response?.status === 409) {
+                alert('You have already applied for this job!');
+            } else {
+                alert(e.response?.data?.message || 'Unable to apply.');
+            }
         } finally {
             setBusy(null);
         }
@@ -75,55 +77,38 @@ export default function JobSearch({ userId }) {
     return (
         <div>
             <h2>🔍 Search & Apply Jobs</h2>
-            
             <div className="search-container">
-                <input 
-                    value={q} 
-                    onChange={e => setQ(e.target.value)} 
-                    placeholder="Search by job title, company, location or keyword..." 
-                    className="form-input" 
-                />
+                <input value={q} onChange={e => setQ(e.target.value)} placeholder="Search jobs..." className="form-input" />
                 <button className="btn-primary" onClick={load}>Refresh</button>
-                <button 
-                    className={`btn-secondary ${showRecommendations ? 'active' : ''}`}
-                    onClick={() => {
-                        setShowRecommendations(!showRecommendations);
-                        if (!showRecommendations && userId) {
-                            getRecommendations(userId, 10);
-                        }
-                    }}
-                >
+                <button className={`btn-secondary ${showRecommendations ? 'active' : ''}`} onClick={() => {
+                    setShowRecommendations(!showRecommendations);
+                    if (!showRecommendations && userId) getRecommendations(userId, 10);
+                }}>
                     {showRecommendations ? '🤖 Hide AI Matches' : '🤖 Show AI Matches'}
                 </button>
             </div>
 
             {aiLoading && <p style={{ color: '#6b7280' }}>Loading AI recommendations...</p>}
-            
+
             {showRecommendations && recommendations?.recommendations?.length > 0 && (
                 <div className="ai-match-banner">
                     <span className="ai-icon">🤖</span>
                     <span className="ai-text">
-                        <strong>{recommendations.recommendations.length}</strong> AI-matched jobs found 
-                        {recommendations.summary?.averageMatchScore && 
-                            ` · Average match: ${Math.round(recommendations.summary.averageMatchScore)}%`
-                        }
+                        <strong>{recommendations.recommendations.length}</strong> AI-matched jobs found
+                        {recommendations.summary?.averageMatchScore && ` · Average match: ${Math.round(recommendations.summary.averageMatchScore)}%`}
                     </span>
                     {recommendations.recommendations.slice(0, 2).map((r, i) => (
-                        <span key={r.jobId} className="ai-tag">
-                            {r.jobTitle} ({Math.round(r.matchScore)}%)
-                        </span>
+                        <span key={r.jobId} className="ai-tag">{r.jobTitle} ({Math.round(r.matchScore)}%)</span>
                     ))}
-                    {recommendations.recommendations.length > 2 && (
-                        <span className="ai-tag">+{recommendations.recommendations.length - 2} more</span>
-                    )}
+                    {recommendations.recommendations.length > 2 && <span className="ai-tag">+{recommendations.recommendations.length - 2} more</span>}
                 </div>
             )}
 
             {error && <p style={{ color: '#b91c1c' }}>{error}</p>}
-            
+
             {loading ? (
                 <div className="skeleton-grid">
-                    {[1,2,3,4].map(i => (
+                    {[1, 2, 3, 4].map(i => (
                         <div key={i} className="skeleton-card">
                             <div className="skeleton-line title"></div>
                             <div className="skeleton-line subtitle"></div>
@@ -137,7 +122,7 @@ export default function JobSearch({ userId }) {
                     {shown.map(job => {
                         const aiMatch = recommendations?.recommendations?.find(r => r.jobId === job.id);
                         const matchLevel = aiMatch ? getMatchLevel(aiMatch.matchScore) : null;
-                        
+
                         return (
                             <div key={job.id} className="job-card">
                                 <div>
@@ -146,14 +131,12 @@ export default function JobSearch({ userId }) {
                                         <span className="company-name">🏢 {job.company?.name || job.companyName || 'Company'}</span>
                                         <span>📍 {job.location || 'Location not specified'}</span>
                                     </div>
-                                    
                                     <div className="job-meta">
                                         <span className="type">{job.employmentType || 'Full-Time'}</span>
                                         <span className="location">{job.workMode || 'On-site'}</span>
                                     </div>
-                                    
                                     <p>{job.description?.slice(0, 150)}...</p>
-                                    
+
                                     {aiMatch && showRecommendations && (
                                         <div className="ai-insights">
                                             <div className="insight-item">
@@ -171,9 +154,7 @@ export default function JobSearch({ userId }) {
                                                     {aiMatch.matchedSkills.slice(0, 4).map((skill, i) => (
                                                         <span key={i} className="skill-tag">{skill}</span>
                                                     ))}
-                                                    {aiMatch.matchedSkills.length > 4 && 
-                                                        <span className="skill-tag">+{aiMatch.matchedSkills.length - 4}</span>
-                                                    }
+                                                    {aiMatch.matchedSkills.length > 4 && <span className="skill-tag">+{aiMatch.matchedSkills.length - 4}</span>}
                                                 </div>
                                             )}
                                             {aiMatch.skillsToImprove?.length > 0 && (
@@ -187,18 +168,14 @@ export default function JobSearch({ userId }) {
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 {aiMatch && showRecommendations && (
                                     <div className={`ai-match-badge ${matchLevel}`}>
                                         🤖 {Math.round(aiMatch.matchScore)}% Match
                                     </div>
                                 )}
-                                
-                                <button 
-                                    disabled={busy === job.id} 
-                                    onClick={() => apply(job)} 
-                                    className="btn-primary"
-                                >
+
+                                <button disabled={busy === job.id} onClick={() => apply(job)} className="btn-primary">
                                     {busy === job.id ? '⏳ Applying...' : '📝 Apply Now'}
                                 </button>
                             </div>
