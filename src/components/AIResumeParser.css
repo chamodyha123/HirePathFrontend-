@@ -1,0 +1,282 @@
+/* src/components/AIResumeParser.css */
+.ai-resume-parser {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    position: relative;
+}
+
+.ai-resume-parser .parser-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ai-resume-parser .parser-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #1e293b;
+}
+
+.ai-resume-parser .close-btn {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 0 8px;
+}
+
+.ai-resume-parser .close-btn:hover {
+    color: #64748b;
+}
+
+.ai-resume-parser .parser-method {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 16px;
+}
+
+.ai-resume-parser .parser-method label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #475569;
+}
+
+.ai-resume-parser .parser-textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: monospace;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.ai-resume-parser .parser-textarea:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.ai-resume-parser .parser-file-upload {
+    border: 2px dashed #d1d5db;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+}
+
+.ai-resume-parser .parser-file-upload input {
+    display: block;
+    margin: 0 auto;
+}
+
+.ai-resume-parser .file-info {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8fafc;
+    border-radius: 6px;
+}
+
+.ai-resume-parser .file-info .file-size {
+    color: #94a3b8;
+    margin-left: 8px;
+}
+
+.ai-resume-parser .parser-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.ai-resume-parser .parser-actions button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.ai-resume-parser .parser-actions .btn-primary {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: white;
+    flex: 1;
+}
+
+.ai-resume-parser .parser-actions .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.ai-resume-parser .parser-actions .btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ai-resume-parser .parser-actions .btn-secondary {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.ai-resume-parser .parser-actions .btn-secondary:hover {
+    background: #e2e8f0;
+}
+
+.ai-resume-parser .progress-bar {
+    margin-top: 12px;
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.ai-resume-parser .progress-bar .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4f46e5, #7c3aed);
+    transition: width 0.3s ease;
+}
+
+.ai-resume-parser .spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.ai-resume-parser .parser-error {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-radius: 6px;
+    color: #991b1b;
+    font-size: 14px;
+}
+
+.ai-resume-parser .parser-result {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.ai-resume-parser .parser-result h4 {
+    margin: 0 0 12px 0;
+    color: #1e293b;
+}
+
+.ai-resume-parser .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.ai-resume-parser .result-item {
+    padding: 8px 12px;
+    background: #f8fafc;
+    border-radius: 6px;
+}
+
+.ai-resume-parser .result-item label {
+    display: block;
+    font-size: 11px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.ai-resume-parser .result-item span {
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.ai-resume-parser .result-section {
+    margin-bottom: 14px;
+}
+
+.ai-resume-parser .result-section label {
+    display: block;
+    font-size: 12px;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.ai-resume-parser .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.ai-resume-parser .skill-tag {
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.ai-resume-parser .exp-item,
+.ai-resume-parser .edu-item {
+    padding: 6px 0;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+}
+
+.ai-resume-parser .exp-item strong,
+.ai-resume-parser .edu-item strong {
+    min-width: 100px;
+    color: #1e293b;
+}
+
+.ai-resume-parser .exp-item span,
+.ai-resume-parser .edu-item span {
+    color: #64748b;
+}
+
+.ai-resume-parser .exp-item .exp-date,
+.ai-resume-parser .edu-item .edu-date {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-left: auto;
+}
+
+@media (max-width: 600px) {
+    .ai-resume-parser .result-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ai-resume-parser .parser-actions {
+        flex-direction: column;
+    }
+    
+    .ai-resume-parser .parser-actions button {
+        width: 100%;
+    }
+}

@@ -34,8 +34,49 @@ export const TERMINAL_STATUSES = [
     STATUS_VALUE.Withdrawn,
 ];
 
+
+const STATUS_NAME_TO_VALUE = {
+    Applied: STATUS_VALUE.Applied,
+    UnderReview: STATUS_VALUE.UnderReview,
+    "Under Review": STATUS_VALUE.UnderReview,
+    Shortlisted: STATUS_VALUE.Shortlisted,
+    InterviewScheduled: STATUS_VALUE.InterviewScheduled,
+    "Interview Scheduled": STATUS_VALUE.InterviewScheduled,
+    Interviewed: STATUS_VALUE.Interviewed,
+    Offered: STATUS_VALUE.Offered,
+    Hired: STATUS_VALUE.Hired,
+    Rejected: STATUS_VALUE.Rejected,
+    Withdrawn: STATUS_VALUE.Withdrawn,
+};
+
+export function normalizeStatus(value) {
+    if (typeof value === "number") return value;
+    if (typeof value === "string") {
+        const numeric = Number(value);
+        if (Number.isFinite(numeric) && numeric > 0) return numeric;
+        return STATUS_NAME_TO_VALUE[value] ?? STATUS_NAME_TO_VALUE[value.replace(/\s+/g, "")] ?? 0;
+    }
+    return 0;
+}
+
+export function normalizeCollection(data) {
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.$values)) return data.$values;
+    if (Array.isArray(data?.items)) return data.items;
+    return [];
+}
+
+export function normalizeApplication(application) {
+    return {
+        ...application,
+        status: normalizeStatus(application?.status),
+        interviews: normalizeCollection(application?.interviews),
+        statusHistory: normalizeCollection(application?.statusHistory),
+    };
+}
+
 export function statusLabel(statusValue) {
-    return APPLICATION_STATUS[statusValue] || "Unknown";
+    return APPLICATION_STATUS[normalizeStatus(statusValue)] || "Unknown";
 }
 
 const applicationApi = {

@@ -1,4 +1,5 @@
-import api from './axios'; // ඔයා හදපු axios instance එක
+// src/api/candidateService.js
+import api from './axios';
 
 const candidateService = {
     // ============ PROFILE MANAGEMENT ============
@@ -95,18 +96,17 @@ const candidateService = {
         return response.data;
     },
 
-    // 💡 Fix: userId එක ලබාගෙන එය Endpoint එකට Query එකක් විදියට සහ FormData නිවැරදිව සැකසීම
+    // Resume එකක් Upload කිරීම
     uploadResume: async (file, isPrimary = true, userId) => {
         const formData = new FormData();
         formData.append('File', file);
-        formData.append('IsPrimary', isPrimary.toString()); // බූලියන් එක String එකක් ලෙස යැවීම .NET වලට පහසුයි
+        formData.append('IsPrimary', isPrimary.toString());
 
-        // URL එකට userId එක සෙට් කිරීම (Backend Controller එක අනුව)
         const url = userId ? `/Candidate/resume?userId=${userId}` : '/Candidate/resume';
 
         const response = await api.post(url, formData, {
             headers: {
-                'Content-Type': 'multipart/form-data' // File upload සඳහා අනිවාර්ය වේ
+                'Content-Type': 'multipart/form-data'
             }
         });
         return response.data;
@@ -142,6 +142,93 @@ const candidateService = {
     // Profile Picture එක Delete කිරීම
     deleteProfilePicture: async () => {
         const response = await api.delete('/Candidate/profile-picture');
+        return response.data;
+    },
+
+    // ============================================
+    // AI-POWERED FEATURES
+    // ============================================
+
+    /**
+     * Parse resume using AI
+     * @param {string} text - Resume text content
+     * @returns {Promise} - Parsed resume data
+     */
+    parseResumeWithAI: async (text) => {
+        const response = await api.post('/ai/parse-resume-text', { resumeText: text });
+        return response.data;
+    },
+
+    /**
+     * Parse resume file using AI
+     * @param {File} file - Resume file (PDF, DOCX, TXT)
+     * @returns {Promise} - Parsed resume data
+     */
+    parseResumeFileWithAI: async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        const response = await api.post('/ai/parse-resume-file', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        return response.data;
+    },
+
+    /**
+     * Extract skills from text using AI
+     * @param {string} text - Text to extract skills from
+     * @returns {Promise} - Extracted skills
+     */
+    extractSkillsWithAI: async (text) => {
+        const response = await api.post('/ai/extract-skills', { text });
+        return response.data;
+    },
+
+    /**
+     * Get job recommendations for a candidate
+     * @param {number} candidateId - Candidate ID
+     * @param {number} limit - Max recommendations
+     * @returns {Promise} - Job recommendations
+     */
+    getJobRecommendations: async (candidateId, limit = 10) => {
+        const response = await api.post('/ai/recommendations', { 
+            candidateId, 
+            limit,
+            includeApplied: false 
+        });
+        return response.data;
+    },
+
+    /**
+     * Match a candidate to a specific job
+     * @param {number} jobId - Job ID
+     * @param {number} candidateId - Candidate ID
+     * @returns {Promise} - Match result
+     */
+    matchCandidateToJob: async (jobId, candidateId) => {
+        const response = await api.post('/ai/match', { jobId, candidateId });
+        return response.data;
+    },
+
+    /**
+     * Get recruitment analytics
+     * @param {number} companyId - Company ID
+     * @param {string} startDate - Start date (ISO)
+     * @param {string} endDate - End date (ISO)
+     * @returns {Promise} - Analytics data
+     */
+    getRecruitmentAnalytics: async (companyId, startDate = null, endDate = null) => {
+        const response = await api.post('/ai/analytics', { companyId, startDate, endDate });
+        return response.data;
+    },
+
+    /**
+     * Generate AI recruitment report
+     * @param {number} companyId - Company ID
+     * @param {string} reportType - Type of report
+     * @returns {Promise} - Report data
+     */
+    generateRecruitmentReport: async (companyId, reportType = 'comprehensive') => {
+        const response = await api.post('/ai/report', { companyId, reportType, format: 'json' });
         return response.data;
     }
 };

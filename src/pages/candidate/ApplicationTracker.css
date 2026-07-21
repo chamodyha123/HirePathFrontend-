@@ -1,26 +1,68 @@
+/* src/pages/candidate/ApplicationTracker.css */
 .tracker-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.tracker-table th, .tracker-table td {
-    border: 1px solid #e2e8f0;
-    padding: 12px;
-    text-align: left;
+.tracker-table thead {
+    background: #f8fafc;
 }
 
 .tracker-table th {
-    background-color: #f8f9fa;
+    padding: 14px 16px;
+    text-align: left;
+    font-weight: 600;
     color: #475569;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.tracker-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    color: #1e293b;
+    font-size: 14px;
+}
+
+.tracker-table tr:hover {
+    background: #f8fafc;
 }
 
 .status-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
     font-size: 12px;
-    font-weight: bold;
+    font-weight: 600;
+    color: white;
 }
 
-.status-badge.pending { background-color: #fef08a; color: #a16207; }
-.status-badge.reviewed { background-color: #bfdbfe; color: #1e40af; }
+.tracker-table button {
+    padding: 6px 14px;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.tracker-table button:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .tracker-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}

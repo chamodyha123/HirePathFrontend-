@@ -1,3 +1,4 @@
+// src/pages/Home.jsx
 import { Link } from "react-router-dom";
 import {
   FaArrowRight,
@@ -12,7 +13,7 @@ import "./auth/Auth.css";
 const portalCards = [
   {
     title: "Candidate Portal",
-    description: "Search jobs, manage your profile, upload resumes and track applications.",
+    description: "Search jobs, manage your profile, upload resumes and track applications with AI-powered matching.",
     icon: <FaUserGraduate />,
     link: "/login?portal=candidate",
     tag: "Job seekers",
@@ -20,7 +21,7 @@ const portalCards = [
   },
   {
     title: "Company Portal",
-    description: "Manage jobs, candidates, interview workflows and your hiring team.",
+    description: "Manage jobs, candidates, interview workflows and your hiring team with AI insights.",
     icon: <FaBuilding />,
     link: "/login?portal=company",
     tag: "Recruiters & hiring managers",
@@ -28,7 +29,7 @@ const portalCards = [
   },
   {
     title: "Platform Admin",
-    description: "Review companies, manage users and monitor the HirePath platform.",
+    description: "Review companies, manage users and monitor the HirePath platform with analytics.",
     icon: <FaShieldAlt />,
     link: "/login?portal=admin",
     tag: "Authorized administrators",
@@ -57,13 +58,13 @@ function Home() {
 
       <main>
         <section className="portal-hero">
-          <div className="hero-badge">AI-powered hiring ecosystem</div>
+          <div className="hero-badge">🚀 AI-powered hiring ecosystem</div>
           <h1>
             HirePath <span>Portals &amp; Registration</span>
           </h1>
           <p>
             Everything candidates, recruiters and administrators need to move
-            through the hiring journey in one secure platform.
+            through the hiring journey in one secure, AI-powered platform.
           </p>
         </section>
 
@@ -113,7 +114,7 @@ function Home() {
             <div className="registration-card">
               <span className="registration-number">01</span>
               <h3>Candidate Registration</h3>
-              <p>Create a candidate profile, verify your email and begin applying for jobs.</p>
+              <p>Create a candidate profile, verify your email and begin applying for jobs with AI matching.</p>
               <Link to="/register">Create candidate account <FaArrowRight /></Link>
             </div>
 
@@ -128,15 +129,15 @@ function Home() {
 
         <section className="about-strip" id="about">
           <div>
-            <strong>Secure access</strong>
+            <strong>🔒 Secure access</strong>
             <span>JWT authentication and role-based portals</span>
           </div>
           <div>
-            <strong>Smart recruitment</strong>
+            <strong>🤖 Smart recruitment</strong>
             <span>AI-assisted matching and candidate insights</span>
           </div>
           <div>
-            <strong>Connected workflow</strong>
+            <strong>🔗 Connected workflow</strong>
             <span>From registration to hiring in one platform</span>
           </div>
         </section>

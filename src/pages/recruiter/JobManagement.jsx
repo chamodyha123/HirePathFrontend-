@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import RecruiterSidebar from './RecruiterSidebar';
 import api from '../../api/axios';
 
-const JobManagement = () => {
+const JobManagement = ({ embedded = false }) => {
   const [jobs, setJobs] = useState([]);
   const [companies, setCompanies] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -179,10 +179,15 @@ const JobManagement = () => {
   };
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', backgroundColor: '#f9fafb' }}>
-      <RecruiterSidebar />
+    <div style={{
+      display: 'flex',
+      minHeight: embedded ? 'auto' : '100vh',
+      width: embedded ? '100%' : '100vw',
+      backgroundColor: '#f9fafb'
+    }}>
+      {!embedded && <RecruiterSidebar />}
       
-      <div style={{ flex: 1, padding: '40px', boxSizing: 'border-box' }}>
+      <div style={{ flex: 1, padding: embedded ? '0' : '40px', boxSizing: 'border-box', minWidth: 0 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
           <div>
             <h2 style={{ fontSize: '24px', fontWeight: '700', color: '#111827', margin: 0 }}>Job Management</h2>
