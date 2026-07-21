@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import PlatformAdminSidebar from '../components/platform-admin/PlatformAdminSidebar';
+import '../styles/platformAdminTheme.css';
 
 function PlatformAdminLayout() {
     const userJson = localStorage.getItem("user");
@@ -16,7 +17,7 @@ function PlatformAdminLayout() {
     }
 
     return (
-        <div className="dashboard-container auth-page" style={{ justifyContent: 'flex-start', padding: 0, alignItems: 'stretch' }}>
+        <div className="dashboard-container auth-page platform-admin-shell" style={{ justifyContent: 'flex-start', padding: 0, alignItems: 'stretch' }}>
             <PlatformAdminSidebar />
             
             <main className="content-area" style={{ padding: '40px', overflowY: 'auto', position: 'relative', zIndex: 2 }}>
