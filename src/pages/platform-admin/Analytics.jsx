@@ -186,19 +186,50 @@ function Analytics() {
   const [message, setMessage] =
     useState("");
 
-  const loadAnalytics = useCallback(
-    async ({ showLoader = false } = {}) => {
-      if (showLoader) {
-        setLoading(true);
-      } else {
-        setRefreshing(true);
+  const refreshAnalytics = useCallback(async () => {
+    setRefreshing(true);
+    setMessage("");
+
+    try {
+      const data =
+        await platformAdminService.getAnalyticsData();
+
+      if (!data) {
+        setAnalytics(FALLBACK_ANALYTICS);
+        setIsLiveData(false);
+        setMessage(
+          "Analytics endpoint is not available. Showing sample data."
+        );
+        return;
       }
 
+      setAnalytics(normalizeAnalytics(data));
+      setIsLiveData(true);
+    } catch (error) {
+      console.error(
+        "Analytics request failed:",
+        error
+      );
+
+      setAnalytics(FALLBACK_ANALYTICS);
+      setIsLiveData(false);
+      setMessage(getErrorMessage(error));
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchInitialAnalytics = async () => {
       setMessage("");
 
       try {
         const data =
           await platformAdminService.getAnalyticsData();
+
+        if (!isMounted) return;
 
         if (!data) {
           setAnalytics(FALLBACK_ANALYTICS);
@@ -206,7 +237,6 @@ function Analytics() {
           setMessage(
             "Analytics endpoint is not available. Showing sample data."
           );
-
           return;
         }
 
@@ -218,20 +248,24 @@ function Analytics() {
           error
         );
 
+        if (!isMounted) return;
+
         setAnalytics(FALLBACK_ANALYTICS);
         setIsLiveData(false);
         setMessage(getErrorMessage(error));
       } finally {
-        setLoading(false);
-        setRefreshing(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-    },
-    []
-  );
+    };
 
-  useEffect(() => {
-    loadAnalytics({ showLoader: true });
-  }, [loadAnalytics]);
+    fetchInitialAnalytics();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -285,7 +319,7 @@ function Analytics() {
 
           <button
             type="button"
-            onClick={() => loadAnalytics()}
+            onClick={refreshAnalytics}
             disabled={refreshing}
           >
             {refreshing
@@ -448,33 +482,23 @@ function AnalyticsStyles() {
   return (
     <style>{`
       .analytics-page {
-        --analytics-bg: #0e1424;
-        --analytics-surface: #161d33;
-        --analytics-surface-soft: #1c2540;
-        --analytics-border: #293452;
-        --analytics-text: #edf2ff;
-        --analytics-muted: #8d99b3;
-        --analytics-green: #34d399;
-        --analytics-blue: #38bdf8;
-        --analytics-purple: #a78bfa;
-        --analytics-orange: #f59e0b;
+        --analytics-bg: #f8fafc;
+        --analytics-surface: #ffffff;
+        --analytics-surface-soft: #f1f5f9;
+        --analytics-border: #e2e8f0;
+        --analytics-text: #0f172a;
+        --analytics-muted: #64748b;
+        --analytics-green: #059669;
+        --analytics-blue: #0284c7;
+        --analytics-purple: #7c3aed;
+        --analytics-orange: #d97706;
 
         width: 100%;
         box-sizing: border-box;
         padding: 28px;
         color: var(--analytics-text);
-        background:
-          radial-gradient(
-            circle at top left,
-            rgba(56, 189, 248, 0.09),
-            transparent 36%
-          ),
-          radial-gradient(
-            circle at top right,
-            rgba(167, 139, 250, 0.11),
-            transparent 40%
-          ),
-          var(--analytics-bg);
+        background: var(--analytics-bg);
+        border: 1px solid var(--analytics-border);
         border-radius: 18px;
       }
 
@@ -525,6 +549,7 @@ function AnalyticsStyles() {
 
       .analytics-header h1 {
         margin: 8px 0 8px;
+        color: #0f172a;
         font-size: clamp(24px, 3vw, 34px);
         line-height: 1.15;
       }
@@ -545,16 +570,18 @@ function AnalyticsStyles() {
 
       .analytics-header-actions button {
         padding: 9px 15px;
-        color: var(--analytics-text);
+        color: #1e293b;
         font-weight: 700;
         cursor: pointer;
         background: var(--analytics-surface);
-        border: 1px solid var(--analytics-border);
+        border: 1px solid #cbd5e1;
         border-radius: 10px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       }
 
       .analytics-header-actions button:hover:not(:disabled) {
         border-color: var(--analytics-blue);
+        color: var(--analytics-blue);
       }
 
       .analytics-header-actions button:disabled {
@@ -569,9 +596,11 @@ function AnalyticsStyles() {
         padding: 8px 12px;
         color: var(--analytics-muted);
         font-size: 12px;
+        font-weight: 600;
         background: var(--analytics-surface);
         border: 1px solid var(--analytics-border);
         border-radius: 20px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
       }
 
       .analytics-status span {
@@ -582,14 +611,12 @@ function AnalyticsStyles() {
 
       .analytics-status.live span {
         background: var(--analytics-green);
-        box-shadow: 0 0 0 4px
-          rgba(52, 211, 153, 0.12);
+        box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.15);
       }
 
       .analytics-status.sample span {
         background: var(--analytics-orange);
-        box-shadow: 0 0 0 4px
-          rgba(245, 158, 11, 0.12);
+        box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.15);
       }
 
       .analytics-message {
@@ -598,36 +625,31 @@ function AnalyticsStyles() {
         gap: 10px;
         margin-bottom: 20px;
         padding: 13px 15px;
-        color: #fcd34d;
-        background: rgba(245, 158, 11, 0.08);
-        border: 1px solid
-          rgba(245, 158, 11, 0.32);
+        color: #92400e;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
         border-radius: 11px;
       }
 
       .analytics-message p {
         margin: 0;
-        color: #d8c69f;
+        color: #78350f;
         font-size: 13px;
       }
 
       .analytics-stat-grid {
         display: grid;
-        grid-template-columns:
-          repeat(auto-fit, minmax(220px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
         gap: 16px;
         margin-bottom: 20px;
       }
 
       .analytics-stat-card {
         padding: 22px;
-        background: linear-gradient(
-          145deg,
-          var(--analytics-surface),
-          var(--analytics-surface-soft)
-        );
+        background: var(--analytics-surface);
         border: 1px solid var(--analytics-border);
         border-radius: 15px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       }
 
       .analytics-stat-icon {
@@ -643,27 +665,15 @@ function AnalyticsStyles() {
       }
 
       .analytics-stat-icon.green {
-        background: linear-gradient(
-          135deg,
-          #10b981,
-          #047857
-        );
+        background: linear-gradient(135deg, #10b981, #047857);
       }
 
       .analytics-stat-icon.blue {
-        background: linear-gradient(
-          135deg,
-          #38bdf8,
-          #0369a1
-        );
+        background: linear-gradient(135deg, #38bdf8, #0369a1);
       }
 
       .analytics-stat-icon.purple {
-        background: linear-gradient(
-          135deg,
-          #a78bfa,
-          #6d28d9
-        );
+        background: linear-gradient(135deg, #a78bfa, #6d28d9);
       }
 
       .analytics-stat-card > span {
@@ -706,8 +716,7 @@ function AnalyticsStyles() {
 
       .analytics-content-grid {
         display: grid;
-        grid-template-columns:
-          repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 20px;
       }
 
@@ -717,6 +726,7 @@ function AnalyticsStyles() {
         background: var(--analytics-surface);
         border: 1px solid var(--analytics-border);
         border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       }
 
       .analytics-panel-heading {
@@ -737,6 +747,7 @@ function AnalyticsStyles() {
 
       .analytics-panel-heading h2 {
         margin: 5px 0 0;
+        color: #0f172a;
         font-size: 18px;
       }
 
@@ -766,7 +777,8 @@ function AnalyticsStyles() {
       }
 
       .distribution-heading span {
-        color: #cbd5e1;
+        color: #334155;
+        font-weight: 500;
       }
 
       .distribution-heading strong {
@@ -777,7 +789,7 @@ function AnalyticsStyles() {
         width: 100%;
         height: 9px;
         overflow: hidden;
-        background: #252f49;
+        background: #e2e8f0;
         border-radius: 10px;
       }
 
@@ -814,7 +826,8 @@ function AnalyticsStyles() {
         color: var(--analytics-purple);
         font-size: 12px;
         font-weight: 900;
-        background: rgba(167, 139, 250, 0.1);
+        background: #f5f3ff;
+        border: 1px solid #ddd6fe;
         border-radius: 9px;
       }
 
