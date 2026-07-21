@@ -64,10 +64,7 @@ function getDashboard(roles = []) {
     return "/platform-admin";
   }
 
-  if (
-    normalizedRoles.includes("companyadmin") ||
-    normalizedRoles.includes("recruiter")
-  ) {
+  if (roles.includes("CompanyAdmin") || roles.includes("Recruiter")) {
     return "/recruiter-dashboard";
   }
 

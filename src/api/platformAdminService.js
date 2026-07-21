@@ -207,10 +207,6 @@ const getErrorMessage = (error) => {
 };
 
 const platformAdminService = {
-  // ==================================================
-  // DASHBOARD
-  // ==================================================
-
   getDashboardStats: async () => {
     const response = await api.get(
       "/platform-admin/dashboard"
@@ -239,6 +235,7 @@ const platformAdminService = {
   // COMPANIES
   // ==================================================
 
+  // ─── COMPANIES ───────────────────────────────────────────────
   getAllCompanies: async () => {
     const response = await api.get(
       "/platform-admin/companies"
@@ -250,156 +247,40 @@ const platformAdminService = {
   },
 
   getPendingCompanies: async () => {
-    const response = await api.get(
-      "/platform-admin/companies/pending"
-    );
-
-    return unwrapList(response.data).map(
-      normalizeCompany
-    );
+    const response = await api.get("/platform-admin/companies/pending");
+    return unwrapList(response.data).map(normalizeCompany);
   },
 
   getCompanyById: async (companyId) => {
-    if (!companyId) {
-      throw new Error("Company ID is required.");
-    }
+    const response = await api.get(`/platform-admin/companies/${companyId}`);
+    return response.data;
+  },
 
-    const response = await api.get(
-      `/platform-admin/companies/${companyId}`
+  approveCompany: async (companyId, adminNotes = null) => {
+    const response = await api.put(
+      `/platform-admin/companies/${companyId}/approve`,
+      { adminNotes }
     );
 
     return normalizeCompany(response.data);
   },
 
-  requestCompanyInformation: async (
-    companyId,
-    message
-  ) => {
-    if (!companyId) {
-      throw new Error("Company ID is required.");
-    }
-
-    if (!message?.trim()) {
-      throw new Error(
-        "Information request message is required."
-      );
-    }
-
+  rejectCompany: async (companyId, rejectionReason) => {
     const response = await api.put(
-      `/platform-admin/companies/${companyId}/request-information`,
-      {
-        message: message.trim(),
-      }
+      `/platform-admin/companies/${companyId}/reject`,
+      { rejectionReason }
     );
 
     return response.data;
   },
 
   suspendCompany: async (companyId) => {
-    if (!companyId) {
-      throw new Error("Company ID is required.");
-    }
-
-    const response = await api.put(
-      `/platform-admin/companies/${companyId}/suspend`
-    );
-
+    const response = await api.put(`/platform-admin/companies/${companyId}/suspend`);
     return response.data;
   },
 
   activateCompany: async (companyId) => {
-    if (!companyId) {
-      throw new Error("Company ID is required.");
-    }
-
-    const response = await api.put(
-      `/platform-admin/companies/${companyId}/activate`
-    );
-
-    return response.data;
-  },
-
-  // ==================================================
-  // COMPANY REGISTRATION REQUESTS
-  // ==================================================
-
-  getRegistrationRequests: async (
-    status = null
-  ) => {
-    const response = await api.get(
-      "/platform-admin/companies/registrations",
-      {
-        params: status
-          ? {
-              status,
-            }
-          : undefined,
-      }
-    );
-
-    return unwrapList(response.data).map(
-      normalizeRegistration
-    );
-  },
-
-  getPendingRegistrationRequests: async () => {
-    const response = await api.get(
-      "/platform-admin/companies/registrations",
-      {
-        params: {
-          status: "Pending",
-        },
-      }
-    );
-
-    return unwrapList(response.data).map(
-      normalizeRegistration
-    );
-  },
-
-  approveRegistration: async (
-    registrationId,
-    note = null
-  ) => {
-    if (!registrationId) {
-      throw new Error(
-        "Registration ID is required."
-      );
-    }
-
-    const response = await api.put(
-      `/platform-admin/companies/registrations/${registrationId}/approve`,
-      {
-        note: note?.trim() || null,
-      }
-    );
-
-    return response.data;
-  },
-
-  rejectRegistration: async (
-    registrationId,
-    note
-  ) => {
-    if (!registrationId) {
-      throw new Error(
-        "Registration ID is required."
-      );
-    }
-
-    if (!note?.trim()) {
-      throw new Error(
-        "Rejection reason is required."
-      );
-    }
-
-    const response = await api.put(
-      `/platform-admin/companies/registrations/${registrationId}/reject`,
-      {
-        note: note.trim(),
-      }
-    );
-
+    const response = await api.put(`/platform-admin/companies/${companyId}/activate`);
     return response.data;
   },
 
@@ -429,97 +310,9 @@ const platformAdminService = {
   // ==================================================
 
   getAllUsers: async () => {
-    const response = await api.get(
-      "/platform-admin/users"
-    );
-
-    return unwrapList(response.data).map(
-      normalizeUser
-    );
+    const response = await api.get("/platform-admin/users");
+    return unwrapList(response.data);
   },
-
-  getUserById: async (userId) => {
-    if (!userId) {
-      throw new Error("User ID is required.");
-    }
-
-    const response = await api.get(
-      `/platform-admin/users/${userId}`
-    );
-
-    return normalizeUser(response.data);
-  },
-
-  suspendUser: async (userId) => {
-    if (!userId) {
-      throw new Error("User ID is required.");
-    }
-
-    const response = await api.put(
-      `/platform-admin/users/${userId}/suspend`
-    );
-
-    return response.data;
-  },
-
-  activateUser: async (userId) => {
-    if (!userId) {
-      throw new Error("User ID is required.");
-    }
-
-    const response = await api.put(
-      `/platform-admin/users/${userId}/activate`
-    );
-
-    return response.data;
-  },
-
-  changeUserRole: async (
-    userId,
-    role
-  ) => {
-    if (!userId) {
-      throw new Error("User ID is required.");
-    }
-
-    if (!role?.trim()) {
-      throw new Error("User role is required.");
-    }
-
-    const response = await api.put(
-      `/platform-admin/users/${userId}/role`,
-      {
-        role: role.trim(),
-      }
-    );
-
-    return response.data;
-  },
-
-  // ==================================================
-  // ANALYTICS
-  // ==================================================
-
-getAnalyticsData: async () => {
-  try {
-    const response = await api.get(
-      "/platform-admin/analytics"
-    );
-
-    return response.data;
-  } catch (error) {
-    if (error.response?.status === 404) {
-      return null;
-    }
-
-    throw error;
-  }
-},
-  // ==================================================
-  // HELPERS
-  // ==================================================
-
-  getErrorMessage,
 };
 
 export default platformAdminService;

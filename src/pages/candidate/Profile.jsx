@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import candidateService, { toPublicFileUrl } from '../../api/candidateService';
+import axios from 'axios'; 
 import { ProfileForm } from './ProfileForm';
 
 function Profile() {
@@ -8,29 +7,52 @@ function Profile() {
     const [loading, setLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
 
-    const fetchProfileData = async () => {
+    const fetchProfileData = async (abortSignal) => {
         try {
             setLoading(true);
-            const response = await candidateService.getProfile();
-            setProfile(response);
-            setIsEditing(false);
-        } catch (error) {
-            if (axios.isCancel(error)) return;
+            const token = localStorage.getItem("token");
 
-            // A new Candidate account may not have a profile yet.
-            if (error.response?.status === 404) {
+            if (!token) {
+                console.error("No token found!");
+                setLoading(false);
+                return;
+            }
+
+            const response = await axios.get('http://localhost:5139/api/Candidate', {
+                signal: abortSignal,
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'accept': '*/*'
+                }
+            });
+
+            if (response.data) {
+                setProfile(response.data);
+                setIsEditing(false);
+            } else {
                 setProfile(null);
                 setIsEditing(true);
-            } else {
-                console.error("Error fetching profile:", error.response?.data || error.message);
             }
+        } catch (error) {
+            if (axios.isCancel(error)) {
+                console.log("Fetch aborted");
+                return;
+            }
+            console.error("Error fetching profile:", error);
+            setProfile(null);
+            setIsEditing(true);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchProfileData();
+        const controller = new AbortController();
+        fetchProfileData(controller.signal);
+
+        return () => {
+            controller.abort();
+        };
     }, []);
 
     const getInitials = () => {
@@ -56,6 +78,7 @@ function Profile() {
         <div style={styles.pageBackground}>
             {!profile || isEditing ? (
                 <ProfileForm
+                    userId={profile?.userId || 3}
                     existingProfile={profile}
                     onSave={() => {
                         setIsEditing(false);
@@ -198,7 +221,7 @@ function Profile() {
                             <ul style={styles.resumeList}>
                                 {profile.resumes.map((r) => (
                                     <li key={r.id} style={styles.resumeItem}>
-                                        <a href={toPublicFileUrl(r.filePath)} target="_blank" rel="noreferrer" style={styles.resumeLink}>
+                                        <a href={`http://localhost:5139${r.filePath}`} target="_blank" rel="noreferrer" style={styles.resumeLink}>
                                             📄 {r.fileName} {r.isPrimary && <span style={styles.primaryDocBadge}>Primary</span>}
                                         </a>
                                     </li>
