@@ -277,55 +277,56 @@ function Users() {
       setLoading(false);
     }
   }, []);
-useEffect(() => {
-  let isMounted = true;
 
-  const fetchUsers = async () => {
-    try {
-      setLoading(true);
-      setError("");
+  useEffect(() => {
+    let isMounted = true;
 
-      const response =
-        await platformAdminService.getAllUsers();
+    const fetchUsers = async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-      if (!isMounted) {
-        return;
+        const response =
+          await platformAdminService.getAllUsers();
+
+        if (!isMounted) {
+          return;
+        }
+
+        const normalizedUsers = extractUsers(
+          response
+        )
+          .map(normalizeUser)
+          .filter((user) => user.id !== null);
+
+        setUsers(normalizedUsers);
+      } catch (requestError) {
+        console.error(
+          "Failed to load users:",
+          requestError
+        );
+
+        if (!isMounted) {
+          return;
+        }
+
+        setUsers([]);
+        setError(
+          getErrorMessage(requestError)
+        );
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
+    };
 
-      const normalizedUsers = extractUsers(
-        response
-      )
-        .map(normalizeUser)
-        .filter((user) => user.id !== null);
+    fetchUsers();
 
-      setUsers(normalizedUsers);
-    } catch (requestError) {
-      console.error(
-        "Failed to load users:",
-        requestError
-      );
-
-      if (!isMounted) {
-        return;
-      }
-
-      setUsers([]);
-      setError(
-        getErrorMessage(requestError)
-      );
-    } finally {
-      if (isMounted) {
-        setLoading(false);
-      }
-    }
-  };
-
-  fetchUsers();
-
-  return () => {
-    isMounted = false;
-  };
-}, []);
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleViewUser = async (user) => {
     try {
@@ -1109,12 +1110,10 @@ function UsersStyles() {
         width: 100%;
         box-sizing: border-box;
         padding: 28px;
-        color: #e5e7eb;
-        background:
-          radial-gradient(circle at top left, rgba(37, 99, 235, 0.12), transparent 35%),
-          radial-gradient(circle at top right, rgba(124, 58, 237, 0.1), transparent 35%),
-          #0f172a;
+        color: #1e293b;
+        background: #f8fafc;
         border-radius: 18px;
+        border: 1px solid #e2e8f0;
       }
 
       .users-page-loading {
@@ -1122,8 +1121,8 @@ function UsersStyles() {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #cbd5e1;
-        background: #0f172a;
+        color: #64748b;
+        background: #f8fafc;
         border-radius: 18px;
       }
 
@@ -1137,7 +1136,7 @@ function UsersStyles() {
       }
 
       .users-eyebrow {
-        color: #38bdf8;
+        color: #0284c7;
         font-size: 11px;
         font-weight: 800;
         letter-spacing: 0.12em;
@@ -1145,30 +1144,32 @@ function UsersStyles() {
 
       .users-header h1 {
         margin: 7px 0 7px;
-        color: #f8fafc;
+        color: #0f172a;
         font-size: clamp(24px, 3vw, 33px);
       }
 
       .users-header p {
         max-width: 760px;
         margin: 0;
-        color: #94a3b8;
+        color: #64748b;
         font-size: 14px;
         line-height: 1.6;
       }
 
       .users-refresh-button {
         padding: 10px 16px;
-        color: #e2e8f0;
+        color: #1e293b;
         font-weight: 700;
         cursor: pointer;
-        background: #1e293b;
-        border: 1px solid #334155;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         border-radius: 10px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       }
 
       .users-refresh-button:hover:not(:disabled) {
-        border-color: #38bdf8;
+        border-color: #0284c7;
+        color: #0284c7;
       }
 
       .users-refresh-button:disabled {
@@ -1184,15 +1185,15 @@ function UsersStyles() {
       }
 
       .users-alert-error {
-        color: #fecaca;
-        background: rgba(239, 68, 68, 0.12);
-        border: 1px solid rgba(239, 68, 68, 0.38);
+        color: #991b1b;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
       }
 
       .users-alert-success {
-        color: #a7f3d0;
-        background: rgba(16, 185, 129, 0.12);
-        border: 1px solid rgba(16, 185, 129, 0.38);
+        color: #065f46;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
       }
 
       .users-toolbar {
@@ -1207,9 +1208,9 @@ function UsersStyles() {
       .users-role-modal select {
         box-sizing: border-box;
         padding: 11px 13px;
-        color: #e2e8f0;
-        background: #111c31;
-        border: 1px solid #334155;
+        color: #0f172a;
+        background: #ffffff;
+        border: 1px solid #cbd5e1;
         border-radius: 10px;
         outline: none;
       }
@@ -1227,8 +1228,8 @@ function UsersStyles() {
       .users-toolbar input:focus,
       .users-toolbar select:focus,
       .users-role-modal select:focus {
-        border-color: #38bdf8;
-        box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+        border-color: #0284c7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
       }
 
       .users-summary {
@@ -1240,29 +1241,32 @@ function UsersStyles() {
 
       .users-summary div {
         padding: 15px 17px;
-        background: rgba(30, 41, 59, 0.78);
-        border: 1px solid #334155;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
         border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       }
 
       .users-summary span {
         display: block;
         margin-bottom: 5px;
-        color: #94a3b8;
+        color: #64748b;
         font-size: 11px;
         text-transform: uppercase;
+        font-weight: 600;
       }
 
       .users-summary strong {
-        color: #f8fafc;
+        color: #0f172a;
         font-size: 22px;
       }
 
       .users-table-wrapper {
         overflow-x: auto;
-        background: #111827;
-        border: 1px solid #273449;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
         border-radius: 14px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
       }
 
       .users-table {
@@ -1273,24 +1277,24 @@ function UsersStyles() {
 
       .users-table th {
         padding: 14px 16px;
-        color: #94a3b8;
+        color: #475569;
         font-size: 11px;
         letter-spacing: 0.06em;
         text-align: left;
         text-transform: uppercase;
-        background: #172033;
-        border-bottom: 1px solid #273449;
+        background: #f1f5f9;
+        border-bottom: 1px solid #e2e8f0;
       }
 
       .users-table td {
         padding: 15px 16px;
-        color: #cbd5e1;
+        color: #334155;
         font-size: 13px;
-        border-bottom: 1px solid #223047;
+        border-bottom: 1px solid #f1f5f9;
       }
 
       .users-table tbody tr:hover {
-        background: rgba(51, 65, 85, 0.22);
+        background: #f8fafc;
       }
 
       .users-actions-heading {
@@ -1310,7 +1314,7 @@ function UsersStyles() {
       }
 
       .users-account-cell span {
-        color: #64748b;
+        color: #94a3b8;
         font-size: 10px;
       }
 
@@ -1328,17 +1332,18 @@ function UsersStyles() {
       }
 
       .users-table code {
-        color: #67e8f9;
+        color: #0284c7;
+        font-weight: 600;
       }
 
       .users-role-badge {
         display: inline-block;
         padding: 5px 9px;
-        color: #c4b5fd;
+        color: #6d28d9;
         font-size: 11px;
         font-weight: 700;
-        background: rgba(124, 58, 237, 0.12);
-        border: 1px solid rgba(124, 58, 237, 0.3);
+        background: #f5f3ff;
+        border: 1px solid #ddd6fe;
         border-radius: 999px;
       }
 
@@ -1351,15 +1356,15 @@ function UsersStyles() {
       }
 
       .users-status-badge.active {
-        color: #6ee7b7;
-        background: rgba(16, 185, 129, 0.12);
-        border: 1px solid rgba(16, 185, 129, 0.34);
+        color: #047857;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
       }
 
       .users-status-badge.suspended {
-        color: #fca5a5;
-        background: rgba(239, 68, 68, 0.12);
-        border: 1px solid rgba(239, 68, 68, 0.34);
+        color: #b91c1c;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
       }
 
       .users-action-group {
@@ -1413,7 +1418,7 @@ function UsersStyles() {
       .users-empty,
       .users-no-results {
         padding: 38px 20px !important;
-        color: #94a3b8 !important;
+        color: #64748b !important;
         text-align: center !important;
       }
 
@@ -1425,7 +1430,7 @@ function UsersStyles() {
         align-items: center;
         justify-content: center;
         padding: 18px;
-        background: rgba(2, 6, 23, 0.78);
+        background: rgba(15, 23, 42, 0.4);
         backdrop-filter: blur(4px);
       }
 
@@ -1433,11 +1438,11 @@ function UsersStyles() {
       .users-role-modal {
         width: min(560px, 100%);
         padding: 24px;
-        color: #e2e8f0;
-        background: #111827;
-        border: 1px solid #334155;
+        color: #1e293b;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
         border-radius: 16px;
-        box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
       }
 
       .users-role-modal {
@@ -1453,7 +1458,7 @@ function UsersStyles() {
       }
 
       .users-modal-header span {
-        color: #38bdf8;
+        color: #0284c7;
         font-size: 10px;
         font-weight: 800;
         letter-spacing: 0.12em;
@@ -1461,19 +1466,28 @@ function UsersStyles() {
 
       .users-modal-header h2 {
         margin: 5px 0 0;
-        color: #f8fafc;
+        color: #0f172a;
         font-size: 21px;
       }
 
       .users-modal-header > button {
         width: 34px;
         height: 34px;
-        color: #94a3b8;
+        color: #64748b;
         font-size: 24px;
         cursor: pointer;
-        background: #1e293b;
-        border: 1px solid #334155;
-        border-radius: 9px;
+        background: #f1f5f9;
+        border: 1px solid #cbd5e1;
+        border-radius: 999px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+      }
+
+      .users-modal-header > button:hover {
+        background: #e2e8f0;
+        color: #0f172a;
       }
 
       .users-details-grid {
@@ -1484,8 +1498,8 @@ function UsersStyles() {
 
       .users-details-grid div {
         padding: 13px;
-        background: #172033;
-        border: 1px solid #29364c;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
         border-radius: 10px;
       }
 
@@ -1495,10 +1509,11 @@ function UsersStyles() {
         color: #64748b;
         font-size: 10px;
         text-transform: uppercase;
+        font-weight: 600;
       }
 
       .users-details-grid strong {
-        color: #e2e8f0;
+        color: #0f172a;
         font-size: 13px;
         overflow-wrap: anywhere;
       }
@@ -1506,7 +1521,7 @@ function UsersStyles() {
       .users-role-modal label {
         display: block;
         margin-bottom: 8px;
-        color: #cbd5e1;
+        color: #334155;
         font-size: 12px;
         font-weight: 700;
       }
@@ -1532,6 +1547,10 @@ function UsersStyles() {
       }
 
       .users-modal-actions .cancel {
+        background: #64748b;
+      }
+
+      .users-modal-actions .cancel:hover {
         background: #475569;
       }
 
@@ -1551,8 +1570,9 @@ function UsersStyles() {
         display: flex;
         align-items: center;
         justify-content: center;
-        color: white;
-        background: rgba(2, 6, 23, 0.7);
+        color: #0f172a;
+        font-weight: 600;
+        background: rgba(255, 255, 255, 0.8);
       }
 
       @media (max-width: 700px) {

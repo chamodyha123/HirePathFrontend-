@@ -128,14 +128,28 @@ function PendingCompanies() {
 
   const isMountedRef = useRef(true);
 
+  const notifyPlatformAdminDataChanged = useCallback(() => {
+    window.dispatchEvent(
+      new CustomEvent("platform-admin-data-changed", {
+        detail: {
+          source: "pending-companies",
+          timestamp: Date.now(),
+        },
+      })
+    );
+  }, []);
+
   const loadPending = useCallback(async () => {
     try {
       setLoading(true);
       setError("");
 
-      const data = await platformAdminService.getPendingCompanies();
+      const data =
+        await platformAdminService.getPendingCompanies();
 
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {
+        return;
+      }
 
       const pendingList = extractList(data)
         .map(normalizePendingCompany)
@@ -157,7 +171,9 @@ function PendingCompanies() {
         requestError
       );
 
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {
+        return;
+      }
 
       setPending([]);
       setError(getErrorMessage(requestError));
@@ -171,7 +187,6 @@ function PendingCompanies() {
   useEffect(() => {
     isMountedRef.current = true;
 
-    // Defer the execution to avoid set-state-in-effect warning during render
     const timerId = setTimeout(() => {
       void loadPending();
     }, 0);
@@ -202,14 +217,19 @@ function PendingCompanies() {
         setError("");
         setSuccess("");
 
-        await platformAdminService.approveCompany(company.id);
+        await platformAdminService.approveCompany(
+          company.id
+        );
 
-        if (!isMountedRef.current) return;
+        if (!isMountedRef.current) {
+          return;
+        }
 
         setSuccess(
           `${company.companyName} was approved successfully.`
         );
 
+        notifyPlatformAdminDataChanged();
         await loadPending();
       } catch (requestError) {
         console.error(
@@ -217,7 +237,9 @@ function PendingCompanies() {
           requestError
         );
 
-        if (!isMountedRef.current) return;
+        if (!isMountedRef.current) {
+          return;
+        }
 
         setError(getErrorMessage(requestError));
         await loadPending();
@@ -253,12 +275,15 @@ function PendingCompanies() {
         rejectionReason.trim()
       );
 
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {
+        return;
+      }
 
       setSuccess(
         `${company.companyName} was rejected successfully.`
       );
 
+      notifyPlatformAdminDataChanged();
       await loadPending();
     } catch (requestError) {
       console.error(
@@ -266,7 +291,9 @@ function PendingCompanies() {
         requestError
       );
 
-      if (!isMountedRef.current) return;
+      if (!isMountedRef.current) {
+        return;
+      }
 
       setError(getErrorMessage(requestError));
       await loadPending();
@@ -319,7 +346,7 @@ function PendingCompanies() {
               color: "var(--dark-text, #0f172a)",
             }}
           >
-            Pending Verification Pipelines
+            Pending Verification Pipelines ({pending.length})
           </h3>
 
           <p
@@ -329,7 +356,8 @@ function PendingCompanies() {
               fontSize: "14px",
             }}
           >
-            Company registration requests waiting for Platform Admin approval.
+            Company registration requests waiting for
+            Platform Admin approval.
           </p>
         </div>
 
@@ -348,7 +376,8 @@ function PendingCompanies() {
               processingId !== null
                 ? "not-allowed"
                 : "pointer",
-            opacity: processingId !== null ? 0.6 : 1,
+            opacity:
+              processingId !== null ? 0.6 : 1,
           }}
         >
           Refresh
@@ -407,6 +436,7 @@ function PendingCompanies() {
               <th>Legal BR ID</th>
               <th>Representative Name</th>
               <th>Email Address</th>
+
               <th
                 style={{
                   textAlign: "right",
@@ -419,21 +449,32 @@ function PendingCompanies() {
 
           <tbody>
             {pending.map((company) => {
-              const isProcessing = processingId === company.id;
+              const isProcessing =
+                processingId === company.id;
 
               return (
                 <tr key={company.id}>
                   <td>
-                    <strong>{company.companyName}</strong>
+                    <strong>
+                      {company.companyName}
+                    </strong>
                   </td>
 
                   <td>
-                    <code>{company.businessRegistrationNumber}</code>
+                    <code>
+                      {
+                        company.businessRegistrationNumber
+                      }
+                    </code>
                   </td>
 
-                  <td>{company.representativeName}</td>
+                  <td>
+                    {company.representativeName}
+                  </td>
 
-                  <td>{company.companyEmail}</td>
+                  <td>
+                    {company.companyEmail}
+                  </td>
 
                   <td
                     style={{
@@ -451,7 +492,10 @@ function PendingCompanies() {
                       <button
                         type="button"
                         onClick={() =>
-                          processRequest(company, "approve")
+                          processRequest(
+                            company,
+                            "approve"
+                          )
                         }
                         disabled={isProcessing}
                         className="auth-btn"
@@ -469,7 +513,9 @@ function PendingCompanies() {
                           cursor: isProcessing
                             ? "not-allowed"
                             : "pointer",
-                          opacity: isProcessing ? 0.65 : 1,
+                          opacity: isProcessing
+                            ? 0.65
+                            : 1,
                         }}
                       >
                         {isProcessing
@@ -480,7 +526,10 @@ function PendingCompanies() {
                       <button
                         type="button"
                         onClick={() =>
-                          processRequest(company, "reject")
+                          processRequest(
+                            company,
+                            "reject"
+                          )
                         }
                         disabled={isProcessing}
                         className="auth-btn"
@@ -498,10 +547,14 @@ function PendingCompanies() {
                           cursor: isProcessing
                             ? "not-allowed"
                             : "pointer",
-                          opacity: isProcessing ? 0.65 : 1,
+                          opacity: isProcessing
+                            ? 0.65
+                            : 1,
                         }}
                       >
-                        Reject
+                        {isProcessing
+                          ? "Processing..."
+                          : "Reject"}
                       </button>
                     </div>
                   </td>
@@ -515,11 +568,13 @@ function PendingCompanies() {
                   colSpan={5}
                   style={{
                     textAlign: "center",
-                    color: "var(--muted, #64748b)",
+                    color:
+                      "var(--muted, #64748b)",
                     padding: "32px 20px",
                   }}
                 >
-                  No business entities are waiting in the validation queue.
+                  No business entities are waiting in
+                  the validation queue.
                 </td>
               </tr>
             )}
