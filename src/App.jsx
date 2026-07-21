@@ -28,6 +28,7 @@ import CompanyAdminLayout from "./layouts/CompanyAdminLayout";
 import CompanyAdminDashboard from "./pages/company-admin/CompanyAdminDashboard";
 import CompanyProfile from "./pages/company-admin/CompanyProfile";
 import RecruiterManagement from "./pages/company-admin/RecruiterManagement";
+import CompanyJobs from "./pages/company-admin/CompanyJobs";
 
 const AdminGuard = ({ children }) => <ProtectedRoute roles={["PlatformAdmin", "SuperAdmin", "Admin"]}>{children}</ProtectedRoute>;
 const CompanyAdminGuard = ({ children }) => <ProtectedRoute roles={["CompanyAdmin"]}>{children}</ProtectedRoute>;
@@ -64,6 +65,7 @@ function App() {
           <Route index element={<CompanyAdminDashboard />} />
           <Route path="hiring-managers" element={<HiringManagerManagement />} />
           <Route path="recruiters" element={<RecruiterManagement />} />
+          <Route path="jobs" element={<CompanyJobs />} />
           <Route path="company-profile" element={<CompanyProfile />} />
         </Route>
 

@@ -6,7 +6,7 @@ const links = [
   { to: "/company-admin", label: "Dashboard", icon: <FaChartLine />, end: true },
   { to: "/company-admin/hiring-managers", label: "Hiring Managers", icon: <FaUserTie /> },
   { to: "/company-admin/recruiters", label: "Recruiters", icon: <FaUsers /> },
-  { to: "/recruiter-dashboard/jobs", label: "Jobs", icon: <FaBriefcase /> },
+  { to: "/company-admin/jobs", label: "Jobs", icon: <FaBriefcase /> },
 ];
 
 export default function CompanyAdminLayout() {
