@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import RecruiterSidebar from './RecruiterSidebar';
-import applicationApi, { statusLabel, STATUS_VALUE } from '../../api/applicationApi';
+import applicationApi, { statusLabel, STATUS_VALUE, normalizeApplication, normalizeCollection } from '../../api/applicationApi';
 import interviewApi, { INTERVIEW_TYPE } from '../../api/interviewApi';
 import feedbackApi from '../../api/feedbackApi';
 
@@ -76,7 +76,7 @@ const CandidateTracker = () => {
         setError('');
         try {
             const res = await applicationApi.getByCompany();
-            setApplications(res.data);
+            setApplications(normalizeCollection(res.data).map(normalizeApplication));
         } catch (err) {
             setError(err.response?.data?.message || err.response?.data || 'Failed to load applications.');
         } finally {
