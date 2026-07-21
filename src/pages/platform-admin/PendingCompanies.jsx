@@ -1,91 +1,89 @@
-import React, { useState, useEffect } from 'react';
-import platformAdminService from '../../api/platformAdminService';
+import { useEffect, useState } from "react";
+import platformAdminService from "../../api/platformAdminService";
 
 function PendingCompanies() {
-    const [pending, setPending] = useState([]);
-    const [loading, setLoading] = useState(true);
+  const [pending, setPending] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [processingId, setProcessingId] = useState(null);
 
-    const loadPending = () => {
-        platformAdminService.getPendingCompanies()
-            .then(data => {
-                setPending(data.$values || data || []);
-                setLoading(false);
-            })
-            .catch(() => {
-                // Backend එක නැතත් Viva එකේ පෙන්වන්න Mock Data එකක් තබා ගැනීම
-                setPending([
-                    { id: 3, companyName: 'TechLK Software Solutions', businessRegistrationNumber: 'BR-94112', companyEmail: 'onboarding@techlk.com', representativeName: 'Kasun Perera' },
-                    { id: 4, companyName: 'Damro Sri Lanka', businessRegistrationNumber: 'BR-11029', companyEmail: 'hr@damro.lk', representativeName: 'Nimal Silva' }
-                ]);
-                setLoading(false);
-            });
-    };
+  const loadPending = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      setPending(await platformAdminService.getPendingCompanies());
+    } catch (err) {
+      setError(err.response?.data?.message || "Unable to load pending company registrations.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    useEffect(() => { loadPending(); }, []);
+  useEffect(() => { loadPending(); }, []);
 
-    const processRequest = async (id, status) => {
-        try {
-            if (status === 'approve') {
-                // Backend එක වැඩ නම් ඒකට යවනවා, නැත්නම් catch එකට ගිහින් offline fallback එක වැඩ කරනවා
-                await platformAdminService.approveCompany(id);
-                alert("🎉 Corporate account successfully authorized and approved!");
-                setPending(prev => prev.filter(p => p.id !== id));
-            } else {
-                const comment = prompt("Enter reasoning for declining onboarding registration:");
-                if (comment === null) return;
-                await platformAdminService.rejectCompany(id, comment);
-                alert("❌ Application turned down successfully.");
-                setPending(prev => prev.filter(p => p.id !== id));
-            }
-        } catch {
-            // 💡 Smart Offline Fallback: Backend එක නැතත් බටන් එක වැඩ කරලා ලිස්ට් එකෙන් අයින් වෙන්න සැලැස්වීම
-            if (status === 'approve') {
-                alert("🎉 Onboarding Verified! Corporate account successfully approved and authorized.");
-            } else {
-                alert("❌ Onboarding Rejected! Application turned down and notification dispatched.");
-            }
-            // UI එකෙන් අදාළ Row එක ලස්සනට ඉවත් කිරීම
-            setPending(prev => prev.filter(p => p.id !== id));
-        }
-    };
-
-    if (loading) return <div style={{ color: 'var(--white)', textAlign: 'center' }}>Syncing inbound verification queues...</div>;
-
-    return (
-        <div className="card" style={{ padding: '24px' }}>
-            <h3 style={{ margin: '0 0 20px 0', color: 'var(--dark-text)' }}>Pending Verification Pipelines</h3>
-            <table className="tracker-table" style={{ width: '100%' }}>
-                <thead>
-                    <tr>
-                        <th>Organization</th>
-                        <th>Legal BR ID</th>
-                        <th>Representative Name</th>
-                        <th>Email Address</th>
-                        <th style={{ textAlign: 'right' }}>Authorization</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {pending.map(p => (
-                        <tr key={p.id}>
-                            <td><strong>{p.companyName}</strong></td>
-                            <td><code>{p.businessRegistrationNumber}</code></td>
-                            <td>{p.representativeName}</td>
-                            <td>{p.companyEmail}</td>
-                            <td style={{ textAlign: 'right', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                                <button onClick={() => processRequest(p.id, 'approve')} className="auth-btn" style={{ padding: '6px 12px', width: 'auto', fontSize: '13px', margin: 0, background: '#10b981' }}>Approve</button>
-                                <button onClick={() => processRequest(p.id, 'reject')} className="auth-btn" style={{ padding: '6px 12px', width: 'auto', fontSize: '13px', margin: 0, background: '#ef4444' }}>Reject</button>
-                            </td>
-                        </tr>
-                    ))}
-                    {pending.length === 0 && (
-                        <tr>
-                            <td colSpan="5" style={{ textAlign: 'center', color: 'var(--muted)', padding: '20px' }}>No business entities waiting in the validation queue.</td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
-        </div>
+  const processRequest = async (id, action) => {
+    const note = window.prompt(
+      action === "approve" ? "Optional approval note:" : "Reason for rejection:"
     );
+    if (note === null) return;
+
+    setProcessingId(id);
+    setError("");
+    try {
+      if (action === "approve") {
+        await platformAdminService.approveCompany(id, note || null);
+      } else {
+        if (!note.trim()) {
+          setError("Please enter a rejection reason.");
+          return;
+        }
+        await platformAdminService.rejectCompany(id, note.trim());
+      }
+      setPending((current) => current.filter((item) => item.id !== id));
+    } catch (err) {
+      setError(err.response?.data?.message || `Unable to ${action} this registration.`);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  if (loading) return <div>Loading pending company registrations...</div>;
+
+  return (
+    <div className="card" style={{ padding: "24px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <div>
+          <h3 style={{ margin: 0 }}>Pending Company Registrations</h3>
+          <p style={{ margin: "6px 0 0", color: "#6b7280" }}>Requests submitted from the public company registration form.</p>
+        </div>
+        <button onClick={loadPending} className="auth-btn" style={{ width: "auto", margin: 0, padding: "8px 14px" }}>Refresh</button>
+      </div>
+
+      {error && <div className="message error" style={{ marginBottom: 16 }}>{error}</div>}
+
+      <div style={{ overflowX: "auto" }}>
+        <table className="tracker-table" style={{ width: "100%" }}>
+          <thead><tr><th>Organization</th><th>BR Number</th><th>Representative</th><th>Company Email</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            {pending.map((item) => (
+              <tr key={item.id}>
+                <td><strong>{item.companyName}</strong><div style={{ fontSize: 12, color: "#6b7280" }}>{item.industry || "—"}</div></td>
+                <td>{item.businessRegistrationNumber || "—"}</td>
+                <td>{item.representativeName}<div style={{ fontSize: 12, color: "#6b7280" }}>{item.representativeEmail}</div></td>
+                <td>{item.companyEmail}</td>
+                <td><span style={{ color: "#b45309", fontWeight: 700 }}>{item.status}</span></td>
+                <td><div style={{ display: "flex", gap: 8 }}>
+                  <button disabled={processingId === item.id} onClick={() => processRequest(item.id, "approve")} style={{ padding: "7px 12px", border: 0, borderRadius: 6, background: "#10b981", color: "white" }}>Approve</button>
+                  <button disabled={processingId === item.id} onClick={() => processRequest(item.id, "reject")} style={{ padding: "7px 12px", border: 0, borderRadius: 6, background: "#ef4444", color: "white" }}>Reject</button>
+                </div></td>
+              </tr>
+            ))}
+            {pending.length === 0 && <tr><td colSpan="6" style={{ textAlign: "center", padding: 28, color: "#6b7280" }}>No pending registrations.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
 }
 
 export default PendingCompanies;

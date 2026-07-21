@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import RecruiterSidebar from './RecruiterSidebar';
-
-const API_BASE_URL = 'https://localhost:7253/api/Recruiter';
-const AUTH_TOKEN = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZW1haWwiOiJqYW5lLmRvZUBoaXJlcGF0aC5jb20iLCJ1bmlxdWVfbmFtZSI6ImphbmVkb2VfcmVjcnVpdGVyIiwiZnVsbE5hbWUiOiJKYW5lIERvZSIsImp0aSI6IjgwMDY3NThhLTU3MWEtNDZlMS1iZjA1LWExZWEwNDViNjliMCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlJlY3J1aXRlciIsImV4cCI6MTc4MzY5OTAxOSwiaXNzIjoiSGlyZVBhdGhBUEkiLCJhdWQiOiJIaXJlUGF0aENsaWVudCJ9.9WWeLEmpI13gs54QZt0SXJbRhu0Je4-4ppz0bTk6qgY';
+import api from '../../api/axios';
 
 const JobManagement = () => {
   const [jobs, setJobs] = useState([]);
@@ -45,20 +43,8 @@ const JobManagement = () => {
   const fetchJobs = async () => {
     try {
       // Swagger එකට අනුව නිවැරදි Search Endpoint එක භාවිතා කර ඇත (Query parameters හිස්ව යවයි)
-      const res = await fetch(`${API_BASE_URL}/jobs/search`, {
-        method: 'GET', 
-        headers: { 
-          'Accept': 'application/json',
-          'Authorization': AUTH_TOKEN 
-        }
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        setJobs(extractArray(data));
-      } else {
-        console.error(`Jobs fetch failed with status: ${res.status}`);
-      }
+      const res = await api.get('/Recruiter/jobs/search');
+      setJobs(extractArray(res.data));
     } catch (err) {
       console.error("Error fetching jobs:", err);
     }
@@ -66,14 +52,8 @@ const JobManagement = () => {
 
   const fetchCompanies = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/companies`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json', 'Authorization': AUTH_TOKEN }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setCompanies(extractArray(data));
-      }
+      const res = await api.get('/Recruiter/companies');
+      setCompanies(extractArray(res.data));
     } catch (err) {
       console.error("Error fetching companies:", err);
     }
@@ -81,14 +61,8 @@ const JobManagement = () => {
 
   const fetchDepartments = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/companies/1/departments`, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json', 'Authorization': AUTH_TOKEN }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setDepartments(extractArray(data));
-      }
+      const res = await api.get('/Recruiter/companies/1/departments');
+      setDepartments(extractArray(res.data));
     } catch (err) {
       console.error("Error fetching departments:", err);
     }
@@ -114,15 +88,13 @@ const JobManagement = () => {
       if (existingCompany) {
         companyId = existingCompany.id;
       } else {
-        const compRes = await fetch(`${API_BASE_URL}/companies`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': AUTH_TOKEN },
-          body: JSON.stringify({ name: targetCompanyName, description: "Auto Created", website: "", location: "Colombo" })
+        const compRes = await api.post('/Recruiter/companies', {
+          name: targetCompanyName,
+          description: "Auto Created",
+          website: "",
+          location: "Colombo"
         });
-        if (compRes.ok) {
-          const newComp = await compRes.json();
-          companyId = newComp.id;
-        }
+        companyId = compRes.data.id;
       }
 
       const targetDeptName = jobForm.departmentName.trim();
@@ -133,15 +105,11 @@ const JobManagement = () => {
       if (existingDept) {
         departmentId = existingDept.id;
       } else {
-        const deptRes = await fetch(`${API_BASE_URL}/departments`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': AUTH_TOKEN },
-          body: JSON.stringify({ name: targetDeptName, companyId: companyId })
+        const deptRes = await api.post('/Recruiter/departments', {
+          name: targetDeptName,
+          companyId: companyId
         });
-        if (deptRes.ok) {
-          const newDept = await deptRes.json();
-          departmentId = newDept.id;
-        }
+        departmentId = deptRes.data.id;
       }
 
       // Swagger Schema එකට 100% ක්ම සමාන කල Payload එක
@@ -160,26 +128,20 @@ const JobManagement = () => {
         skills: ["React", ".NET Core"]
       };
 
-      const url = isEditing ? `${API_BASE_URL}/jobs/${currentJobId}` : `${API_BASE_URL}/jobs`;
-      const method = isEditing ? 'PUT' : 'POST';
-
-      const res = await fetch(url, {
-        method: method,
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': AUTH_TOKEN },
-        body: JSON.stringify(payload)
-      });
-
-      if (res.ok) {
-        alert(isEditing ? "Job updated successfully!" : "Job posted successfully!");
-        closeModal();
-        await loadAllData(); 
+      if (isEditing) {
+        await api.put(`/Recruiter/jobs/${currentJobId}`, payload);
+        alert("Job updated successfully!");
       } else {
-        const errData = await res.text();
-        alert(`Server Error: ${errData}`);
+        await api.post('/Recruiter/jobs', payload);
+        alert("Job posted successfully!");
       }
+
+      closeModal();
+      await loadAllData(); 
     } catch (err) {
       console.error("Error saving job:", err);
-      alert("Something went wrong while processing.");
+      const errMsg = err.response?.data?.message || err.response?.data || err.message;
+      alert(`Error: ${typeof errMsg === 'object' ? JSON.stringify(errMsg) : errMsg}`);
     }
   };
 
@@ -199,18 +161,12 @@ const JobManagement = () => {
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this job opportunity?")) {
       try {
-        const res = await fetch(`${API_BASE_URL}/jobs/${id}`, { 
-          method: 'DELETE',
-          headers: { 'Authorization': AUTH_TOKEN }
-        });
-        if (res.ok) {
-          alert("Job deleted successfully!");
-          await loadAllData();
-        } else {
-          alert("Failed to delete job.");
-        }
+        await api.delete(`/Recruiter/jobs/${id}`);
+        alert("Job deleted successfully!");
+        await loadAllData();
       } catch (err) {
         console.error("Error deleting job:", err);
+        alert("Failed to delete job.");
       }
     }
   };

@@ -111,11 +111,8 @@ function PlatformAdminDashboard() {
                 setLoading(false);
                 setSecondsAgo(0);
             })
-            .catch(() => {
-                setStats({
-                    totalCompanies: 18, pendingCompanies: 3, approvedCompanies: 14,
-                    suspendedCompanies: 1, totalUsers: 312, totalJobs: 82, totalApplications: 419
-                });
+            .catch((err) => {
+                console.error('Dashboard stats fetch failed:', err);
                 setIsLive(false);
                 setLoading(false);
                 setSecondsAgo(0);

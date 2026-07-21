@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import RecruiterSidebar from './RecruiterSidebar';
-
-const API_BASE_URL = 'https://localhost:7253/api/Recruiter';
-const AUTH_TOKEN = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZW1haWwiOiJqYW5lLmRvZUBoaXJlcGF0aC5jb20iLCJ1bmlxdWVfbmFtZSI6ImphbmVkb2VfcmVjcnVpdGVyIiwiZnVsbE5hbWUiOiJKYW5lIERvZSIsImp0aSI6IjgwMDY3NThhLTU3MWEtNDZlMS1iZjA1LWExZWEwNDViNjliMCIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlJlY3J1aXRlciIsImV4cCI6MTc4MzY5OTAxOSwiaXNzIjoiSGlyZVBhdGhBUEkiLCJhdWQiOiJIaXJlUGF0aENsaWVudCJ9.9WWeLEmpI13gs54QZt0SXJbRhu0Je4-4ppz0bTk6qgY';
+import api from '../../api/axios';
 
 const RecruiterDashboard = () => {
   // ⚡ Backend එකෙන් එන real data තබා ගැනීමට state එකක් සකසයි
@@ -13,12 +11,8 @@ const RecruiterDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  // Dynamic job listing for the dashboard summary
-  const [recentJobs, setRecentJobs] = useState([
-    { id: 1, title: 'software developer', department: 'Engineering Department', applicants: 0, status: 'Active' },
-    { id: 2, title: 'senior developer', department: 'sales', applicants: 0, status: 'Active' },
-    { id: 3, title: 'Test Fetch', department: 'Engineering Department', applicants: 0, status: 'Active' },
-  ]);
+  const [recentJobs, setRecentJobs] = useState([]);
+
 
   useEffect(() => {
     fetchDashboardStats();
@@ -26,26 +20,20 @@ const RecruiterDashboard = () => {
 
   const fetchDashboardStats = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/dashboard/stats`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': AUTH_TOKEN
-        }
+      const res = await api.get('/Recruiter/dashboard/stats');
+      const data = res.data;
+      setStats({
+        activeJobs: data.activeJobs ?? 0,
+        newApplications: data.newApplications ?? 0,
+        interviewsThisWeek: data.interviewsThisWeek ?? 0
       });
-
-      if (res.ok) {
-        const data = await res.json();
-        setStats({
-          activeJobs: data.activeJobs ?? data.activeJobsCount ?? 0,
-          newApplications: data.newApplications ?? data.newApplicationsCount ?? 0,
-          interviewsThisWeek: data.interviewsThisWeek ?? data.interviewsCount ?? 0
-        });
-      } else {
-        console.error("Failed to fetch real dashboard stats.");
+      if (Array.isArray(data.recentJobs)) {
+        setRecentJobs(data.recentJobs);
+      } else if (data.recentJobs?.$values) {
+        setRecentJobs(data.recentJobs.$values);
       }
     } catch (err) {
-      console.error("Error fetching stats:", err);
+      console.error("Error fetching dashboard stats:", err);
     } finally {
       setLoading(false);
     }
