@@ -1,6 +1,8 @@
+// src/pages/candidate/Profile.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { ProfileForm } from './ProfileForm';
+import AIResumeParser from '../../components/AIResumeParser';
 import {
   Box,
   Container,
@@ -31,6 +33,7 @@ import {
   useTheme,
   useMediaQuery,
   alpha,
+  Modal,
 } from '@mui/material';
 import {
   Edit,
@@ -52,10 +55,13 @@ import {
   Code,
   Share,
   Download,
+  Psychology,
 } from '@mui/icons-material';
 import { styled, keyframes } from '@mui/material/styles';
 
-// Animations
+// ============================================
+// ANIMATIONS
+// ============================================
 const float = keyframes`
   0% { transform: translateY(0px); }
   50% { transform: translateY(-10px); }
@@ -68,7 +74,9 @@ const pulse = keyframes`
   100% { transform: scale(1); }
 `;
 
-// Styled Components
+// ============================================
+// STYLED COMPONENTS
+// ============================================
 const GradientBackground = styled(Box)(({ theme }) => ({
   background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
   minHeight: '100vh',
@@ -246,6 +254,9 @@ const FloatingActionButton = styled(Button)(({ theme }) => ({
   },
 }));
 
+// ============================================
+// MAIN PROFILE COMPONENT
+// ============================================
 function Profile() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -255,7 +266,14 @@ function Profile() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [activeTab, setActiveTab] = useState(0);
   const [hoveredCard, setHoveredCard] = useState(null);
+  
+  // AI State
+  const [showAIParser, setShowAIParser] = useState(false);
+  const [skillsList, setSkillsList] = useState([]);
+  const [formData, setFormData] = useState({});
+  const [aiParsing, setAiParsing] = useState(false);
 
+  // Fetch Profile
   const fetchProfileData = async (abortSignal) => {
     try {
       setLoading(true);
@@ -281,6 +299,7 @@ function Profile() {
 
       if (response.data) {
         setProfile(response.data);
+        setSkillsList(response.data.skills || []);
         setIsEditing(false);
       } else {
         setProfile(null);
@@ -313,6 +332,69 @@ function Profile() {
     };
   }, []);
 
+  // AI Handlers
+  const handleAIParseComplete = (parsedData) => {
+    setAiParsing(true);
+    
+    try {
+      const fullName = parsedData.fullName || '';
+      const nameParts = fullName.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      const updatedFormData = {
+        ...formData,
+        firstName: firstName,
+        lastName: lastName,
+        summary: parsedData.summary || formData.summary || '',
+        yearsOfExperience: parsedData.yearsOfExperience || formData.yearsOfExperience || 0,
+        location: parsedData.location || formData.location || '',
+        phoneNumber: parsedData.phone || formData.phoneNumber || '',
+        linkedInUrl: parsedData.linkedInUrl || formData.linkedInUrl || '',
+        portfolioUrl: parsedData.portfolioUrl || formData.portfolioUrl || '',
+        gitHubUrl: parsedData.gitHubUrl || formData.gitHubUrl || '',
+        languages: parsedData.languages?.join(', ') || formData.languages || '',
+      };
+      
+      setFormData(updatedFormData);
+
+      if (parsedData.skills && parsedData.skills.length > 0) {
+        const newSkills = parsedData.skills.map(skill => ({
+          skillName: skill,
+          skillLevel: 'Intermediate',
+          yearsOfExperience: 0
+        }));
+
+        const existingSkillNames = skillsList.map(s => s.skillName.toLowerCase());
+        const uniqueNewSkills = newSkills.filter(
+          s => !existingSkillNames.includes(s.skillName.toLowerCase())
+        );
+
+        if (uniqueNewSkills.length > 0) {
+          setSkillsList([...skillsList, ...uniqueNewSkills]);
+        }
+      }
+
+      setSnackbar({
+        open: true,
+        message: `✅ AI parsed ${parsedData.skills?.length || 0} skills from your resume!`,
+        severity: 'success',
+      });
+
+    } catch (error) {
+      console.error('Error applying AI parsed data:', error);
+      setSnackbar({
+        open: true,
+        message: 'Failed to apply AI parsed data.',
+        severity: 'error',
+      });
+    } finally {
+      setAiParsing(false);
+      setShowAIParser(false);
+    }
+  };
+
+  // Render helpers
   const getInitials = () => {
     if (!profile) return '?';
     const firstInitial = profile.firstName?.[0] || '';
@@ -332,6 +414,22 @@ function Profile() {
     setActiveTab(newValue);
   };
 
+  const modalStyle = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    maxWidth: 700,
+    width: '100%',
+    maxHeight: '90vh',
+    overflow: 'auto',
+    bgcolor: 'background.paper',
+    borderRadius: 4,
+    boxShadow: 24,
+    p: 0,
+  };
+
+  // Loading State
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#f8fafc' }}>
@@ -364,8 +462,23 @@ function Profile() {
     );
   }
 
+  // Main Render
   return (
     <GradientBackground>
+      {/* AI Parser Modal */}
+      <Modal
+        open={showAIParser}
+        onClose={() => setShowAIParser(false)}
+        aria-labelledby="ai-parser-modal"
+      >
+        <Box sx={modalStyle}>
+          <AIResumeParser
+            onParsed={handleAIParseComplete}
+            onClose={() => setShowAIParser(false)}
+          />
+        </Box>
+      </Modal>
+
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}
@@ -781,6 +894,20 @@ function Profile() {
                 {/* Resumes Tab */}
                 {activeTab === 2 && (
                   <Box sx={{ pt: 3 }}>
+                    <Box sx={{ mb: 3 }}>
+                      <GradientButton
+                        startIcon={<Psychology />}
+                        onClick={() => setShowAIParser(true)}
+                        disabled={aiParsing}
+                        sx={{ mr: 2 }}
+                      >
+                        {aiParsing ? '⏳ Parsing...' : '🤖 Parse Resume with AI'}
+                      </GradientButton>
+                      <Typography variant="caption" color="text.secondary" display="inline">
+                        Automatically extract skills, experience, and education from your resume
+                      </Typography>
+                    </Box>
+
                     {profile.resumes?.length > 0 ? (
                       <List>
                         {profile.resumes.map((resume, index) => (
@@ -831,7 +958,7 @@ function Profile() {
                       </List>
                     ) : (
                       <Typography color="text.secondary" align="center" sx={{ py: 6 }}>
-                        No resumes uploaded yet
+                        No resumes uploaded yet. Upload a resume to use AI parsing!
                       </Typography>
                     )}
                   </Box>

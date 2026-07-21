@@ -1,26 +1,501 @@
+/* ========================================
+   TRACKER TABLE - MODERN STYLED
+   ======================================== */
+
+.tracker-table-wrapper {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  border: 1px solid #f1f5f9;
+  overflow-x: auto;
+  transition: all 0.3s ease;
+}
+
+.tracker-table-wrapper:hover {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+}
+
 .tracker-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-top: 0;
+  font-size: 14px;
+  min-width: 650px;
 }
 
-.tracker-table th, .tracker-table td {
-    border: 1px solid #e2e8f0;
-    padding: 12px;
-    text-align: left;
+.tracker-table thead th {
+  background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+  color: #1e293b;
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 16px 18px;
+  border-bottom: 2px solid #e2e8f0;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  transition: all 0.3s ease;
 }
 
-.tracker-table th {
-    background-color: #f8f9fa;
-    color: #475569;
+.tracker-table thead th:first-child {
+  border-radius: 12px 0 0 0;
 }
 
+.tracker-table thead th:last-child {
+  border-radius: 0 12px 0 0;
+}
+
+.tracker-table tbody tr {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: default;
+}
+
+.tracker-table tbody tr:hover {
+  background: #f8fafc;
+  transform: scale(1.002);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.tracker-table tbody tr:last-child td:first-child {
+  border-radius: 0 0 0 12px;
+}
+
+.tracker-table tbody tr:last-child td:last-child {
+  border-radius: 0 0 12px 0;
+}
+
+.tracker-table td {
+  padding: 14px 18px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  vertical-align: middle;
+  transition: all 0.2s ease;
+}
+
+.tracker-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Status Badges - Enhanced */
 .status-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+  position: relative;
+  white-space: nowrap;
 }
 
-.status-badge.pending { background-color: #fef08a; color: #a16207; }
-.status-badge.reviewed { background-color: #bfdbfe; color: #1e40af; }
+.status-badge::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* Status Variants */
+.status-badge.pending {
+  background: linear-gradient(135deg, #fef3c7, #fde68a);
+  color: #92400e;
+  border: 1px solid #fcd34d;
+}
+
+.status-badge.pending::before {
+  background: #f59e0b;
+  animation-delay: 0s;
+}
+
+.status-badge.reviewed {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+  color: #1e40af;
+  border: 1px solid #93c5fd;
+}
+
+.status-badge.reviewed::before {
+  background: #3b82f6;
+  animation-delay: 0.5s;
+}
+
+.status-badge.approved {
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+}
+
+.status-badge.approved::before {
+  background: #10b981;
+  animation-delay: 1s;
+}
+
+.status-badge.rejected {
+  background: linear-gradient(135deg, #fee2e2, #fca5a5);
+  color: #991b1b;
+  border: 1px solid #f87171;
+}
+
+.status-badge.rejected::before {
+  background: #ef4444;
+  animation-delay: 1.5s;
+}
+
+.status-badge.interview {
+  background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+  color: #3730a3;
+  border: 1px solid #a5b4fc;
+}
+
+.status-badge.interview::before {
+  background: #6366f1;
+  animation-delay: 0.7s;
+}
+
+.status-badge.offer {
+  background: linear-gradient(135deg, #fce7f3, #f9a8d4);
+  color: #831843;
+  border: 1px solid #f472b6;
+}
+
+.status-badge.offer::before {
+  background: #ec4899;
+  animation-delay: 1.2s;
+}
+
+.status-badge.hired {
+  background: linear-gradient(135deg, #d1fae5, #34d399);
+  color: #064e3b;
+  border: 1px solid #34d399;
+}
+
+.status-badge.hired::before {
+  background: #059669;
+  animation-delay: 0.3s;
+}
+
+/* Status Animation */
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.7);
+  }
+}
+
+/* Status Badge Hover Effect */
+.status-badge:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Row Animation */
+@keyframes slideInRow {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tracker-table tbody tr {
+  animation: slideInRow 0.4s ease-out forwards;
+  opacity: 0;
+}
+
+.tracker-table tbody tr:nth-child(1) { animation-delay: 0.05s; }
+.tracker-table tbody tr:nth-child(2) { animation-delay: 0.1s; }
+.tracker-table tbody tr:nth-child(3) { animation-delay: 0.15s; }
+.tracker-table tbody tr:nth-child(4) { animation-delay: 0.2s; }
+.tracker-table tbody tr:nth-child(5) { animation-delay: 0.25s; }
+.tracker-table tbody tr:nth-child(6) { animation-delay: 0.3s; }
+.tracker-table tbody tr:nth-child(7) { animation-delay: 0.35s; }
+.tracker-table tbody tr:nth-child(8) { animation-delay: 0.4s; }
+.tracker-table tbody tr:nth-child(9) { animation-delay: 0.45s; }
+.tracker-table tbody tr:nth-child(10) { animation-delay: 0.5s; }
+
+/* Action Buttons in Table */
+.tracker-action-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tracker-action-btn.view {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.tracker-action-btn.view:hover {
+  background: #dbeafe;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.tracker-action-btn.edit {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.tracker-action-btn.edit:hover {
+  background: #fde68a;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.tracker-action-btn.delete {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.tracker-action-btn.delete:hover {
+  background: #fca5a5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+/* Table Header with Sorting */
+.tracker-table th.sortable {
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+.tracker-table th.sortable::after {
+  content: '↕';
+  margin-left: 6px;
+  font-size: 12px;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.tracker-table th.sortable:hover::after {
+  opacity: 1;
+}
+
+.tracker-table th.sortable.asc::after {
+  content: '↑';
+  opacity: 1;
+  color: #2563eb;
+}
+
+.tracker-table th.sortable.desc::after {
+  content: '↓';
+  opacity: 1;
+  color: #2563eb;
+}
+
+/* Empty State */
+.tracker-empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: #94a3b8;
+}
+
+.tracker-empty-state .empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.tracker-empty-state h3 {
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.tracker-empty-state p {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .tracker-table-wrapper {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .tracker-table {
+    font-size: 13px;
+    min-width: 500px;
+  }
+
+  .tracker-table thead th,
+  .tracker-table td {
+    padding: 10px 12px;
+  }
+
+  .status-badge {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  .tracker-action-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tracker-table-wrapper {
+    padding: 8px;
+  }
+
+  .tracker-table {
+    font-size: 12px;
+    min-width: 400px;
+  }
+
+  .tracker-table thead th,
+  .tracker-table td {
+    padding: 8px 10px;
+  }
+
+  .status-badge {
+    padding: 3px 8px;
+    font-size: 10px;
+    gap: 4px;
+  }
+
+  .status-badge::before {
+    width: 4px;
+    height: 4px;
+  }
+
+  .tracker-action-btn {
+    padding: 3px 8px;
+    font-size: 10px;
+  }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  .tracker-table-wrapper {
+    background: #1e293b;
+    border-color: #334155;
+  }
+
+  .tracker-table thead th {
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    color: #f1f5f9;
+    border-bottom-color: #334155;
+  }
+
+  .tracker-table tbody tr:hover {
+    background: #2d3748;
+  }
+
+  .tracker-table td {
+    color: #cbd5e1;
+    border-bottom-color: #334155;
+  }
+
+  .status-badge.pending {
+    background: linear-gradient(135deg, #451a03, #78350f);
+    color: #fcd34d;
+    border-color: #78350f;
+  }
+
+  .status-badge.reviewed {
+    background: linear-gradient(135deg, #1e3a5f, #1e40af);
+    color: #93c5fd;
+    border-color: #1e40af;
+  }
+
+  .status-badge.approved {
+    background: linear-gradient(135deg, #064e3b, #065f46);
+    color: #6ee7b7;
+    border-color: #065f46;
+  }
+
+  .status-badge.rejected {
+    background: linear-gradient(135deg, #7f1d1d, #991b1b);
+    color: #fca5a5;
+    border-color: #991b1b;
+  }
+
+  .status-badge.interview {
+    background: linear-gradient(135deg, #1e1b4b, #3730a3);
+    color: #c7d2fe;
+    border-color: #3730a3;
+  }
+
+  .status-badge.offer {
+    background: linear-gradient(135deg, #4c0519, #831843);
+    color: #f9a8d4;
+    border-color: #831843;
+  }
+
+  .status-badge.hired {
+    background: linear-gradient(135deg, #064e3b, #059669);
+    color: #34d399;
+    border-color: #059669;
+  }
+
+  .tracker-action-btn.view {
+    background: #1e3a5f;
+    color: #93c5fd;
+  }
+
+  .tracker-action-btn.edit {
+    background: #451a03;
+    color: #fcd34d;
+  }
+
+  .tracker-action-btn.delete {
+    background: #7f1d1d;
+    color: #fca5a5;
+  }
+
+  .tracker-empty-state {
+    color: #64748b;
+  }
+
+  .tracker-empty-state h3 {
+    color: #94a3b8;
+  }
+
+  .tracker-empty-state p {
+    color: #64748b;
+  }
+}
+
+/* Scrollbar Styling for Table Wrapper */
+.tracker-table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.tracker-table-wrapper::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.tracker-table-wrapper::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #cbd5e1, #94a3b8);
+  border-radius: 4px;
+}
+
+.tracker-table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #94a3b8, #64748b);
+}
