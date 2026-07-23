@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import platformAdminService from '../../api/platformAdminService';
 
 function Companies() {
@@ -22,7 +22,10 @@ function Companies() {
         }
     }, []);
 
-    useEffect(() => { loadCompanies(); }, [loadCompanies]);
+    useEffect(() => {
+        const timer = window.setTimeout(() => { void loadCompanies(); }, 0);
+        return () => window.clearTimeout(timer);
+    }, [loadCompanies]);
 
     const handleToggleStatus = async (company) => {
         setActionLoading(company.id);
