@@ -19,7 +19,10 @@ function PendingCompanies() {
     }
   };
 
-  useEffect(() => { loadPending(); }, []);
+  useEffect(() => {
+    const timer = window.setTimeout(() => { void loadPending(); }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const processRequest = async (id, action) => {
     const note = window.prompt(

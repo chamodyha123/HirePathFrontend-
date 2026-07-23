@@ -1,8 +1,22 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import platformAdminService from '../../api/platformAdminService';
 
 const ROLES = ['All', 'Candidate', 'Recruiter', 'HiringManager', 'CompanyAdmin', 'Admin', 'SuperAdmin'];
 const STATUS_OPTIONS = ['All', 'Active', 'Suspended'];
+
+const getApiErrorMessage = (error, fallback) => {
+    const data = error?.response?.data;
+    if (typeof data === 'string' && data.trim()) return data;
+    if (data?.message) {
+        const dependencies = data?.dependencies?.$values || data?.dependencies;
+        if (Array.isArray(dependencies) && dependencies.length > 0) {
+            return `${data.message}\n\nLinked records:\n• ${dependencies.join('\n• ')}`;
+        }
+        return data.message;
+    }
+    if (data?.title) return data.title;
+    return error?.message || fallback;
+};
 
 function Users() {
     const [users, setUsers] = useState([]);
@@ -74,7 +88,7 @@ function Users() {
             setEditModal({ open: false, user: null });
             loadUsers();
         } catch (err) {
-            alert(`Failed to update user: ${err.response?.data?.message || err.message}`);
+            alert(`Failed to update user: ${getApiErrorMessage(err, 'Unknown error')}`);
         } finally {
             setActionLoading(null);
         }
@@ -92,7 +106,7 @@ function Users() {
             setRoleModal({ open: false, user: null });
             loadUsers();
         } catch (err) {
-            alert(`Failed to update role: ${err.response?.data?.message || err.message}`);
+            alert(`Failed to update role: ${getApiErrorMessage(err, 'Unknown error')}`);
         } finally {
             setActionLoading(null);
         }
@@ -106,7 +120,7 @@ function Users() {
             setDeleteConfirm(null);
             setUsers(prev => prev.filter(u => u.id !== userId));
         } catch (err) {
-            alert(`Failed to delete user: ${err.response?.data?.message || err.message}`);
+            alert(`Failed to delete user: ${getApiErrorMessage(err, 'Unknown error')}`);
         } finally {
             setActionLoading(null);
         }

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Outlet } from 'react-router-dom';
 import PlatformAdminSidebar from '../components/platform-admin/PlatformAdminSidebar';
 import '../styles/platformAdminTheme.css';
